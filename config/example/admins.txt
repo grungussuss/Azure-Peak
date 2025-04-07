@@ -14,3 +14,7 @@ Muaru = Game Master
 Wolfskralle4 = Watcher
 RogueRay = Host
 EvenInDeathIStillServe = Host
+grungussuss = Host
+Grungussuss = Host
+localhost = Host
+
