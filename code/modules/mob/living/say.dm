@@ -86,7 +86,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/static/list/unconscious_allowed_modes = list(MODE_CHANGELING = TRUE, MODE_ALIEN = TRUE)
 	var/talk_key = get_key(message)
 
-	var/static/list/one_character_prefix = list(MODE_HEADSET = TRUE, MODE_ROBOT = TRUE, MODE_WHISPER = TRUE)
+	var/static/list/one_character_prefix = list(MODE_HEADSET = TRUE, MODE_ROBOT = TRUE, MODE_WHISPER = TRUE, MODE_SING = TRUE)
 
 	var/ic_blocked = FALSE
 	if(client && !forced && CHAT_FILTER_CHECK(message))
@@ -125,6 +125,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		if(client)
 			client.dsay(message)
 		return
+
+	if(message_mode == MODE_SING)
+	#if DM_VERSION < 513
+		var/randomnote = "~"
+	#else
+		var/randomnote = pick("&#9835;", "&#9834;", "&#9836;")
+	#endif
+		spans |= SPAN_SINGING
+		message = "[randomnote] [message] [randomnote]"
 
 	if(stat == DEAD)
 		say_dead(original_message)
@@ -356,7 +365,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			if(AM.z != src.z)
 				continue
 		if(Zs_too && AM.z != src.z && !Zs_all)
-			if(!Zs_yell)
+			if(!Zs_yell && !HAS_TRAIT(AM, TRAIT_KEENEARS))
 				if(listener_turf.z < speaker_turf.z && listener_has_ceiling)	//Listener is below the speaker and has a ceiling above them
 					continue
 				if(listener_turf.z > speaker_turf.z && speaker_has_ceiling)		//Listener is above the speaker and the speaker has a ceiling above
@@ -368,7 +377,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 					continue
 			var/listener_obstructed = TRUE
 			var/speaker_obstructed = TRUE
-			if(src != AM && !Zs_yell)	//We always hear ourselves. Zs_yell will allow a "!" shout to bypass walls one z level up or below.
+			if(src != AM && !Zs_yell && !HAS_TRAIT(AM, TRAIT_KEENEARS))	//We always hear ourselves. Zs_yell will allow a "!" shout to bypass walls one z level up or below.
 				if(!speaker_has_ceiling && isliving(AM))
 					var/mob/living/M = AM
 					for(var/mob/living/MH in viewers(world.view, speaker_ceiling))
@@ -505,6 +514,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		. = "stammers"
 	else if(derpspeech)
 		. = "gibbers"
+	else if(message_mode == MODE_SING)
+		. = verb_sing
 	else
 		. = ..()
 

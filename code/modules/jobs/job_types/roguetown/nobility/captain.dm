@@ -5,11 +5,12 @@
 	faction = "Station"
 	total_positions = 1
 	spawn_positions = 1
-	allowed_races = RACES_ALL_KINDS
+	allowed_races = RACES_NO_CONSTRUCT
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED, AGE_OLD)
 	tutorial = "Your lineage is noble, and generations of strong, loyal knights have come before you. You served your time \
 	gracefully as knight of his royal majesty, and now you've grown into a role which many men can only dream of becoming. \
+	Veteran among knights, you lead the crown's knights to battle and organize the training squires. Obey the Marshal and the Crown. \
 	Lead your men to victory--and keep them in line--and you will see this realm prosper under a thousand suns."
 	display_order = JDO_GUARD_CAPTAIN
 	advclass_cat_rolls = list(CTAG_CAPTAIN = 20)
@@ -120,6 +121,7 @@
 		"Zweihander",
 		"Great Mace",
 		"Battle Axe",
+		"Greataxe",
 		"Estoc",
 		"Bastard Sword & Shield",
 		"Flail & Shield",
@@ -135,6 +137,9 @@
 			r_hand = /obj/item/rogueweapon/mace/goden/steel
 		if("Battle Axe")
 			r_hand = /obj/item/rogueweapon/stoneaxe/battle
+		if("Greataxe")
+			r_hand = /obj/item/rogueweapon/greataxe/steel/doublehead
+			backl = /obj/item/gwstrap
 		if("Estoc")
 			r_hand = /obj/item/rogueweapon/estoc
 			backl = /obj/item/gwstrap
@@ -256,7 +261,7 @@
 	desc = "Recruit someone to your cause."
 	overlay_state = "recruit_bog"
 	antimagic_allowed = TRUE
-	charge_max = 100
+	recharge_time = 100
 	/// Role given if recruitment is accepted
 	var/new_role = "Beggar"
 	/// Faction shown to the user in the recruitment prompt

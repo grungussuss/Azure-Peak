@@ -5,10 +5,11 @@
 	faction = "Station"
 	total_positions = 3
 	spawn_positions = 3
-	allowed_races = RACES_ALL_KINDS
+	allowed_races = RACES_NO_CONSTRUCT
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED)
-	tutorial = "Having proven yourself both loyal and capable, you have been knighted to serve the realm as the royal family's sentry. You listen to your Liege and the Knight Captain, defending your Lord and realm - the last beacon of chivalry in these dark times."
+	tutorial = "Having proven yourself both loyal and capable, you have been knighted to serve the realm as the royal family's sentry. \
+				You listen to your Liege, the Marshal, and the Knight Captain, defending your Lord and realm - the last beacon of chivalry in these dark times."
 	display_order = JDO_KNIGHT
 	whitelist_req = TRUE
 	outfit = /datum/outfit/job/roguetown/knight
@@ -57,7 +58,7 @@
 	gloves = /obj/item/clothing/gloves/roguetown/chain
 	wrists = /obj/item/clothing/wrists/roguetown/bracers
 	shoes = /obj/item/clothing/shoes/roguetown/boots/armor
-	belt = /obj/item/storage/belt/rogue/leather/black
+	belt = /obj/item/storage/belt/rogue/leather/steel
 	backr = /obj/item/storage/backpack/rogue/satchel/black
 	id = /obj/item/scomstone/bad/garrison
 	backpack_contents = list(/obj/item/storage/keyring/guardcastle = 1)
@@ -91,10 +92,6 @@
 	H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/tracking, 2, TRUE)
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_STEELHEARTED, TRAIT_GENERIC)		//Knights should be used to the horrors of war if they're tride-and-true.
-	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)			//Knights are /technically/ nobles? But they are of the lower-tiers; mainly that a non-blue-blood could become a knight
-	ADD_TRAIT(H, TRAIT_KNIGHTSMAN, TRAIT_GENERIC) 		// +1 con, end, spd, +2 per in the keep
-	ADD_TRAIT(H, TRAIT_GOODTRAINER, TRAIT_GENERIC) 		//Knights can train their squires.
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()	
 	H.verbs |= /mob/proc/haltyell
 
@@ -105,7 +102,7 @@
 	H.change_stat("intelligence", 1)
 
 	H.adjust_blindness(-3)
-	var/weapons = list("Zweihander","Great Mace","Battle Axe","Estoc","Lucerne")
+	var/weapons = list("Zweihander","Great Mace","Battle Axe","Greataxe","Estoc","Lucerne")
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	H.set_blindness(0)
 	switch(weapon_choice)
@@ -116,6 +113,9 @@
 			r_hand = /obj/item/rogueweapon/mace/goden/steel
 		if("Battle Axe")
 			r_hand = /obj/item/rogueweapon/stoneaxe/battle
+		if("Greataxe")
+			r_hand = /obj/item/rogueweapon/greataxe/steel
+			backl = /obj/item/gwstrap
 		if("Estoc")
 			r_hand = /obj/item/rogueweapon/estoc
 			backl = /obj/item/gwstrap
@@ -123,7 +123,6 @@
 			r_hand = /obj/item/rogueweapon/eaglebeak/lucerne
 			backl = /obj/item/gwstrap
 
-	armor = /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 
@@ -142,6 +141,16 @@
 	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
 	if(helmchoice != "None")
 		head = helmets[helmchoice]
+
+	var/armors = list(
+		"Brigandine"		= /obj/item/clothing/suit/roguetown/armor/brigandine,
+		"Coat of Plates"	= /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates,
+		"Steel Cuirass"		= /obj/item/clothing/suit/roguetown/armor/plate/half,
+		"Fluted Cuirass"	= /obj/item/clothing/suit/roguetown/armor/plate/half/fluted,
+	)
+	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
+	armor = armors[armorchoice]
+
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
 
 /datum/advclass/knight/footknight
@@ -183,10 +192,9 @@
 			beltr = /obj/item/rogueweapon/sword/long
 		if("Flail")
 			beltr = /obj/item/rogueweapon/flail/sflail
-		if ("Warhamer")
+		if ("Warhammer")
 			beltr = /obj/item/rogueweapon/mace/warhammer //Iron warhammer. This is one-handed and pairs well with shields. They can upgrade to steel in-round.
-
-	armor = /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates	
+	
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 	backl = /obj/item/rogueweapon/shield/tower/metal
@@ -206,6 +214,15 @@
 	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
 	if(helmchoice != "None")
 		head = helmets[helmchoice]
+
+	var/armors = list(
+		"Brigandine"		= /obj/item/clothing/suit/roguetown/armor/brigandine,
+		"Coat of Plates"	= /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates,
+		"Steel Cuirass"		= /obj/item/clothing/suit/roguetown/armor/plate/half,
+		"Fluted Cuirass"	= /obj/item/clothing/suit/roguetown/armor/plate/half/fluted,
+	)
+	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
+	armor = armors[armorchoice]
 
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
 
@@ -233,6 +250,7 @@
 	H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/tracking, 3, TRUE)
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_GUARDSMAN, TRAIT_GENERIC)
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()
 	H.verbs |= /mob/proc/haltyell
 
@@ -261,7 +279,6 @@
 			beltr = /obj/item/quiver/arrows
 			beltl = /obj/item/rogueweapon/mace/goden/steel
 
-	armor = /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 
@@ -280,6 +297,16 @@
 	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
 	if(helmchoice != "None")
 		head = helmets[helmchoice]
+
+	var/armors = list(
+		"Brigandine"		= /obj/item/clothing/suit/roguetown/armor/brigandine,
+		"Coat of Plates"	= /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates,
+		"Steel Cuirass"		= /obj/item/clothing/suit/roguetown/armor/plate/half,
+		"Fluted Cuirass"	= /obj/item/clothing/suit/roguetown/armor/plate/half/fluted,
+	)
+	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
+	armor = armors[armorchoice]
+
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
 
 
@@ -317,7 +344,7 @@
 	H.change_stat("intelligence", 1)
 
 	H.adjust_blindness(-3)
-	var/weapons = list("Rapier + Longbow","Estoc + Recurve Bow","Sabre + Buckler","Whip + Crossbow")
+	var/weapons = list("Rapier + Longbow","Estoc + Recurve Bow","Sabre + Buckler","Whip + Crossbow","Greataxe + Sling")
 	var/armor_options = list("Light Armor", "Medium Armor")
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	var/armor_choice = input("Choose your armor.", "TAKE UP ARMS") as anything in armor_options
@@ -342,7 +369,15 @@
 			beltl = /obj/item/rogueweapon/whip
 			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
 			beltr = /obj/item/quiver/bolts
-
+		
+		if("Greataxe + Sling")
+			H.mind.adjust_skillrank(/datum/skill/combat/slings, 4, TRUE)
+			H.mind.adjust_skillrank_up_to(/datum/skill/combat/axes, 4, TRUE)
+			r_hand = /obj/item/rogueweapon/greataxe/steel
+			backl = /obj/item/gwstrap
+			beltr = /obj/item/quiver/sling/iron
+			beltl = /obj/item/gun/ballistic/revolver/grenadelauncher/sling
+	
 	switch(armor_choice)
 		if("Light Armor")
 			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
@@ -354,12 +389,15 @@
 			armor = /obj/item/clothing/suit/roguetown/armor/brigandine/light
 
 	var/helmets = list(
-		"Pigface Bascinet" 		= /obj/item/clothing/head/roguetown/helmet/bascinet/pigface,
-		"Bascinet"				= /obj/item/clothing/head/roguetown/helmet/bascinet,
-		"Sallet"				= /obj/item/clothing/head/roguetown/helmet/sallet,
-		"Visored Sallet"		= /obj/item/clothing/head/roguetown/helmet/sallet/visored,
-		"Hounskull Bascinet" 	= /obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull,
-		"Etruscan Bascinet" 	= /obj/item/clothing/head/roguetown/helmet/bascinet/etruscan,
+		"Pigface Bascinet" 	= /obj/item/clothing/head/roguetown/helmet/bascinet/pigface,
+		"Guard Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/guard,
+		"Barred Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/sheriff,
+		"Bucket Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/bucket,
+		"Knight Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/knight,
+		"Visored Sallet"	= /obj/item/clothing/head/roguetown/helmet/sallet/visored,
+		"Armet"				= /obj/item/clothing/head/roguetown/helmet/heavy/knight/armet,
+		"Hounskull Bascinet" = /obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull,
+		"Etruscan Bascinet" = /obj/item/clothing/head/roguetown/helmet/bascinet/etruscan,
 		"None"
 	)
 	

@@ -6,6 +6,8 @@
 	see_in_dark = 8
 	hud_possible = list(ANTAG_HUD)
 	
+	typing_indicator_enabled = TRUE
+	
 	var/resize = 1 //Badminnery resize
 	var/lastattacker = null
 	var/lastattackerckey = null
@@ -28,9 +30,6 @@
 	var/resting = FALSE
 	var/wallpressed = FALSE
 
-	var/pixelshifted = FALSE
-	var/pixelshift_x = 0
-	var/pixelshift_y = 0
 	var/pixelshift_layer = 0
 
 	var/lying = 0			//number of degrees. DO NOT USE THIS IN CHECKS. CHECK FOR MOBILITY FLAGS INSTEAD!!

@@ -13,6 +13,10 @@
 	penfactor = 50
 	item_d_type = "stab"
 
+/datum/intent/spear/thrust/militia
+	penfactor = 40
+	chargetime = 0
+
 /datum/intent/spear/bash
 	name = "bash"
 	blade_class = BCLASS_BLUNT
@@ -34,7 +38,10 @@
 
 /datum/intent/spear/cut/halberd
 	damfactor = 0.9
-	swingdelay = 10
+
+/datum/intent/spear/cut/scythe
+	reach = 3
+	damfactor = 1
 
 /datum/intent/spear/cut/bardiche
     damfactor = 1.0
@@ -81,6 +88,29 @@
 	recovery = 20
 	clickcd = 10
 
+/datum/intent/rend
+	name = "rend"
+	icon_state = "inrend"
+	attack_verb = list("rends")
+	animname = "cut"
+	blade_class = BCLASS_CHOP
+	reach = 1
+	penfactor = -60
+	damfactor = 2.5
+	chargetime = 10
+	no_early_release = TRUE
+	hitsound = list('sound/combat/hits/bladed/genslash (1).ogg', 'sound/combat/hits/bladed/genslash (2).ogg', 'sound/combat/hits/bladed/genslash (3).ogg')
+	item_d_type = "slash"
+	misscost = 10
+
+/datum/intent/rend/reach
+	name = "long rend"
+	penfactor = -30
+	misscost = 5
+	chargetime = 5
+	damfactor = 2
+	reach = 2
+
 //polearm objs ฅ^•ﻌ•^ฅ
 
 /obj/item/rogueweapon/woodstaff
@@ -106,6 +136,7 @@
 	bigboy = TRUE
 	gripsprite = TRUE
 	associated_skill = /datum/skill/combat/polearms
+	anvilrepair = /datum/skill/craft/carpentry
 	resistance_flags = FLAMMABLE
 
 /obj/item/rogueweapon/woodstaff/getonmobprop(tag)
@@ -179,11 +210,13 @@
 
 /obj/item/rogueweapon/spear/psyspear
 	name = "psydonian spear"
-	desc = "Silver spear, crafted to impale those the Inquisiton hunts."
+	desc = "An ornate spear, plated in a ceremonial veneer of silver. The barbs pierce your palm, and - for just a moment - you see red. Never forget that you are why Psydon wept."
 	icon_state = "psyspear"
-	is_silver = TRUE
-	max_blade_int = 150
-	wdefense = 6
+	resistance_flags = FIRE_PROOF	//It's meant to be smacked by a "lamptern", and is special enough to warrant overriding the spear weakness
+
+/obj/item/rogueweapon/spear/psyspear/ComponentInitialize()
+	. = ..()								//+3 force, +50 blade int, +50 int, +1 def, make silver
+	AddComponent(/datum/component/psyblessed, FALSE, 3, 50, 50, 1, TRUE)
 
 /obj/item/rogueweapon/spear/getonmobprop(tag)
 	. = ..()
@@ -220,7 +253,7 @@
 
 /obj/item/rogueweapon/spear/billhook
 	name = "billhook"
-	desc = "A neat hook."
+	desc = "A neat hook. Used to pull riders from horses, as well as defend against said horses when used in a proper formation."
 	icon_state = "billhook"
 	smeltresult = /obj/item/ingot/steel
 	max_blade_int = 200
@@ -479,7 +512,7 @@
 	possible_item_intents = list(SPEAR_THRUST, SPEAR_BASH) //bash is for nonlethal takedowns, only targets limbs
 	gripped_intents = list(SPEAR_THRUST, /datum/intent/spear/cut/halberd, /datum/intent/sword/chop, SPEAR_BASH)
 	name = "halberd"
-	desc = "A steel halberd, mostly used by town guards."
+	desc = "A steel halberd, the pinnicle of all cumulative melee weapon knowledge to some, but commonly seen in a guardsman's hands none-the-less."
 	icon_state = "halberd"
 	icon = 'icons/roguetown/weapons/64.dmi'
 	pixel_y = -16
@@ -514,6 +547,7 @@
 	name = "eclipsum halberd"
 	desc = "A mutual effort of Noc and Astrata's followers, this halberd was forged with both Silver and Gold alike. Blessed to hold strength and bring hope. Whether dae or nite."
 	icon_state = "gsspear"
+	max_integrity = 300
 	force = 20
 	force_wielded = 35
 
@@ -534,13 +568,13 @@
 	gripped_intents = list(/datum/intent/spear/thrust/eaglebeak, /datum/intent/spear/cut/bardiche/scythe, /datum/intent/axe/chop/scythe, SPEAR_BASH)
 
 /obj/item/rogueweapon/halberd/psyhalberd
-	name = "psydonian halberd"
-	desc = "A silver halberd, forged by the inquisiton."
-	max_blade_int = 250
+	name = "Stigmata"
+	desc = "Christened in the Siege of Rockhill, these silver-tipped poleaxes - wielded by a lonesome contingent of Saint Eora's paladins - kept the horrors at bay for forty daes-and-nites. Long-since-recovered from the rubble, this relic now serve as a bulwark for the defenseless."
 	icon_state = "psyhalberd"
-	is_silver = TRUE
-	wdefense = 7
-	smeltresult = /obj/item/ingot/silver
+
+/obj/item/rogueweapon/halberd/psyhalberd/ComponentInitialize()
+	. = ..()				//Pre-blessed, +5 force, +100 blade int, +100 int, +2 def, make silver.
+	AddComponent(/datum/component/psyblessed, TRUE, 5, 100, 100, 2, TRUE)
 
 /obj/item/rogueweapon/halberd/glaive
 	possible_item_intents = list(/datum/intent/spear/thrust/eaglebeak, SPEAR_BASH) //bash is for nonlethal takedowns, only targets limbs
@@ -587,12 +621,12 @@
 	smeltresult = /obj/item/ingot/steel
 	associated_skill = /datum/skill/combat/polearms
 	max_blade_int = 300
-	max_integrity = 500
 	blade_dulling = DULLING_BASHCHOP
 	walking_stick = TRUE
 	wdefense = 5
 	wbalance = -1
 	sellprice = 60
+	intdamage_factor = 0.7
 
 /obj/item/rogueweapon/eaglebeak/getonmobprop(tag)
 	. = ..()
@@ -614,7 +648,6 @@
 	icon_state = "polehammer"
 	smeltresult = /obj/item/ingot/iron
 	max_blade_int = 300
-	max_integrity = 300
 	sellprice = 40
 
 /datum/intent/spear/thrust/eaglebeak
@@ -644,10 +677,15 @@
 	force = 12
 	force_wielded = 30
 	possible_item_intents = list(/datum/intent/sword/chop,/datum/intent/sword/strike) //bash is for nonlethal takedowns, only targets limbs
-	gripped_intents = list(/datum/intent/sword/cut/zwei, /datum/intent/sword/chop, /datum/intent/sword/thrust/zwei, /datum/intent/sword/strike)
+	gripped_intents = list(/datum/intent/sword/cut/zwei, /datum/intent/sword/chop, /datum/intent/sword/thrust/zwei, /datum/intent/sword/peel/big)
 	name = "greatsword"
 	desc = "Might be able to chop anything in half!"
 	icon_state = "gsw"
+	parrysound = list(
+		'sound/combat/parry/bladed/bladedlarge (1).ogg',
+		'sound/combat/parry/bladed/bladedlarge (2).ogg',
+		'sound/combat/parry/bladed/bladedlarge (3).ogg',
+		)
 	icon = 'icons/roguetown/weapons/64.dmi'
 	pixel_y = -16
 	pixel_x = -16
@@ -684,21 +722,24 @@
 	smelt_bar_num = 3
 	max_blade_int = 200
 	wdefense = 4
+	force = 14
+	force_wielded = 35
 
 /obj/item/rogueweapon/greatsword/grenz
 	name = "steel zweihander"
 	icon_state = "steelzwei"
 	smeltresult = /obj/item/ingot/steel
 	smelt_bar_num = 3
+	max_blade_int = 300
 
 /obj/item/rogueweapon/greatsword/psygsword
-	name = "psydonian greatsword"
-	desc = "Silverd, and able to cut apart foes of the inquisiton!"
+	name = "Apocrypha"
+	desc = "In the Otavan mosaics, Saint Ravox - bare in all but a beaked helmet and loincloth - is often depicted wielding such an imposing greatweapon against the Dark Star, Graggar. Regardless of whether this relic was actually wielded by divinity-or-not, its unparallel strength will nevertheless command even the greatest foes to fall."
 	icon_state = "psygsword"
-	max_blade_int = 350
-	wdefense = 6
-	is_silver = TRUE
-	smeltresult = /obj/item/ingot/silver
+
+/obj/item/rogueweapon/greatsword/psygsword/ComponentInitialize()
+	. = ..()					//Pre-blessed, +100 Blade int, +100 int, +2 def, make it silver
+	AddComponent(/datum/component/psyblessed, TRUE, 5, 100, 100, 2, TRUE)
 
 /obj/item/rogueweapon/estoc
 	name = "estoc"

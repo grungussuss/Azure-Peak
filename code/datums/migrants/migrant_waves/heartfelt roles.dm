@@ -3,7 +3,7 @@
 	greet_text = "You are the Lord of Heartfelt, ruler of a once-prosperous barony now in ruin. Guided by your Magos, you journey to the Peak, seeking aid to restore your domain to its former glory, or perhaps claim a new throne."
 	outfit = /datum/outfit/job/roguetown/heartfelt/lord
 	allowed_sexes = list(MALE)
-	allowed_races = RACES_ALL_KINDS
+	allowed_races = RACES_NO_CONSTRUCT
 	grant_lit_torch = TRUE
 	show_wanderer_examine = FALSE
 
@@ -11,7 +11,7 @@
 	..()
 	shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt
 	belt = /obj/item/storage/belt/rogue/leather/black
-	shoes = /obj/item/clothing/shoes/roguetown/nobleboot
+	shoes = /obj/item/clothing/shoes/roguetown/boots/nobleboot
 	pants = /obj/item/clothing/under/roguetown/tights/black
 	cloak = /obj/item/clothing/cloak/heartfelt
 	armor = /obj/item/clothing/suit/roguetown/armor/heartfelt/lord
@@ -54,7 +54,7 @@
 	greet_text = "You are the Lady of Heartfelt, once a respected noblewoman now struggling to survive in a desolate landscape. With your home in ruins, you look to the Peak, hoping to find new purpose or refuge amidst the chaos."
 	outfit = /datum/outfit/job/roguetown/heartfelt/lady
 	allowed_sexes = list(FEMALE)
-	allowed_races = RACES_ALL_KINDS
+	allowed_races = RACES_NO_CONSTRUCT
 	grant_lit_torch = TRUE
 	show_wanderer_examine = FALSE
 
@@ -105,7 +105,7 @@
 	..()
 	shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt
 	belt = /obj/item/storage/belt/rogue/leather/black
-	shoes = /obj/item/clothing/shoes/roguetown/nobleboot
+	shoes = /obj/item/clothing/shoes/roguetown/boots/nobleboot
 	pants = /obj/item/clothing/under/roguetown/tights/black
 	armor = /obj/item/clothing/suit/roguetown/armor/heartfelt/hand
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
@@ -138,7 +138,7 @@
 	name = "Knight of Heartfelt"
 	greet_text = "You are a Knight of Heartfelt, once part of a brotherhood in service to your Lord. Now, alone and committed to safeguarding what remains of your court, you ride to the Peak, resolved to ensure their safe arrival."
 	outfit = /datum/outfit/job/roguetown/heartfelt/knight
-	allowed_races = RACES_ALL_KINDS
+	allowed_races = RACES_NO_CONSTRUCT
 	grant_lit_torch = TRUE
 	show_wanderer_examine = FALSE
 
@@ -229,9 +229,10 @@
 	backl = /obj/item/storage/backpack/rogue/satchel
 	backpack_contents = list(/obj/item/reagent_containers/glass/bottle/rogue/poison,/obj/item/reagent_containers/glass/bottle/rogue/healthpot)
 	ADD_TRAIT(H, TRAIT_SEEPRICES, "[type]")
+	ADD_TRAIT(H, TRAIT_ARCYNE_T4, TRAIT_GENERIC)
 	if(H.mind)
 		H.mind.adjust_skillrank(/datum/skill/misc/reading, 6, TRUE)
-		H.mind.adjust_skillrank(/datum/skill/misc/alchemy, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/alchemy, 3, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/magic/arcane, 5, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/riding, 2, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/combat/polearms, 1, TRUE)
@@ -248,21 +249,21 @@
 		H.change_stat("strength", -1)
 		H.change_stat("constitution", -1)
 		H.change_stat("intelligence", 4)
-		H.mind.adjust_spellpoints(3)
+		H.mind.adjust_spellpoints(11)
 		ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 		if(H.age == AGE_OLD)
 			H.mind.adjust_skillrank(/datum/skill/magic/arcane, 1, TRUE)
 			H.change_stat("speed", -1)
 			H.change_stat("intelligence", 1)
 			H.change_stat("perception", 1)
-			H.mind.adjust_spellpoints(1)
+			H.mind.adjust_spellpoints(2)
 			if(ishumannorthern(H))
 				belt = /obj/item/storage/belt/rogue/leather/plaquegold
 				cloak = null
 				head = /obj/item/clothing/head/roguetown/wizhat
 				armor = /obj/item/clothing/suit/roguetown/shirt/robe/wizard
 				H.dna.species.soundpack_m = new /datum/voicepack/male/wizard()
-		var/list/spells = list(/obj/effect/proc_holder/spell/targeted/touch/prestidigitation, /obj/effect/proc_holder/spell/invoked/projectile/fireball/greater)
+		var/list/spells = list(/obj/effect/proc_holder/spell/targeted/touch/prestidigitation)
 		for(var/S in spells)
 			H.mind.AddSpell(new S)
 
@@ -295,7 +296,7 @@
 		H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/combat/polearms, 3, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/reading, 6, TRUE)
-		H.mind.adjust_skillrank(/datum/skill/misc/alchemy, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/alchemy, 3, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/medicine, 4, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/magic/holy, 4, TRUE)
 		if(H.age == AGE_OLD)

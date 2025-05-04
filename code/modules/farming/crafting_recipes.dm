@@ -47,41 +47,11 @@
 	craftsound = null
 	skillcraft = null
 
-/datum/crafting_recipe/roguetown/dryleaffive
-	name = "dry swampweed x5"
-	result = list(/obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry)
-	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/sweetleaf = 5)
-	structurecraft = /obj/machinery/tanningrack
-	time = 2 SECONDS
-	verbage_simple = "dry"
-	verbage = "dries"
-	craftsound = null
-	skillcraft = null
-
 /datum/crafting_recipe/roguetown/sigsweet
 	name = "swampweed zig"
 	result = /obj/item/clothing/mask/cigarette/rollie/cannabis
 	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry = 1,
 				/obj/item/paper = 1)
-	req_table = TRUE
-	time = 10 SECONDS
-	verbage_simple = "roll"
-	verbage = "rolls"
-	craftdiff = 0
-
-/datum/crafting_recipe/roguetown/sigsweetfive
-	name = "swampweed zig x5"
-	result = list(/obj/item/clothing/mask/cigarette/rollie/cannabis,
-				  /obj/item/clothing/mask/cigarette/rollie/cannabis,
-				  /obj/item/clothing/mask/cigarette/rollie/cannabis,
-				  /obj/item/clothing/mask/cigarette/rollie/cannabis,
-				  /obj/item/clothing/mask/cigarette/rollie/cannabis)
-	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry = 5,
-				/obj/item/paper = 5)
 	req_table = TRUE
 	time = 10 SECONDS
 	verbage_simple = "roll"
@@ -99,14 +69,10 @@
 	craftsound = null
 	skillcraft = null
 
-/datum/crafting_recipe/roguetown/dryweedfive
-	name = "dry westleach leaf x5"
-	result = list(/obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry,
-				  /obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry)
-	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/pipeweed = 5)
+/datum/crafting_recipe/roguetown/dryrosa
+	name = "dry rosa petals"
+	result = /obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried
+	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals = 1)
 	structurecraft = /obj/machinery/tanningrack
 	time = 2 SECONDS
 	verbage_simple = "dry"
@@ -119,21 +85,6 @@
 	result = /obj/item/clothing/mask/cigarette/rollie/nicotine
 	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry = 1,
 				/obj/item/paper = 1)
-	req_table = TRUE
-	time = 10 SECONDS
-	verbage_simple = "roll"
-	verbage = "rolls"
-	craftdiff = 0
-
-/datum/crafting_recipe/roguetown/sigdryfive
-	name = "westleach zig x5"
-	result = list(/obj/item/clothing/mask/cigarette/rollie/nicotine,
-				  /obj/item/clothing/mask/cigarette/rollie/nicotine,
-				  /obj/item/clothing/mask/cigarette/rollie/nicotine,
-				  /obj/item/clothing/mask/cigarette/rollie/nicotine,
-				  /obj/item/clothing/mask/cigarette/rollie/nicotine)
-	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry = 5,
-				/obj/item/paper = 5)
 	req_table = TRUE
 	time = 10 SECONDS
 	verbage_simple = "roll"

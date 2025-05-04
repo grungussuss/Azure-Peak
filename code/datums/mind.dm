@@ -337,8 +337,6 @@
 		if(known_skills[S] > old_level)
 			to_chat(current, span_nicegreen("My [S.name] grows to [SSskills.level_names[known_skills[S]]]!"))
 			S.skill_level_effect(src, known_skills[S])
-		if(skill == /datum/skill/magic/arcane)
-			adjust_spellpoints(1)
 	else
 		to_chat(current, span_warning("My [S.name] has weakened to [SSskills.level_names[known_skills[S]]]!"))
 
@@ -357,8 +355,6 @@
 /datum/mind/proc/adjust_skillrank(skill, amt, silent = FALSE)
 	var/datum/skill/S = GetSkillRef(skill)
 	var/amt2gain = 0
-	if(skill == /datum/skill/magic/arcane)
-		adjust_spellpoints(amt)
 	for(var/i in 1 to amt)
 		switch(skill_experience[S])
 			if(SKILL_EXP_MASTER to SKILL_EXP_LEGENDARY)
@@ -415,14 +411,6 @@
 	var/datum/skill/S = GetSkillRef(skill)
 	return known_skills[S] || SKILL_LEVEL_NONE
 
-/datum/mind/proc/get_skill_parry_modifier(skill)
-	var/datum/skill/combat/S = GetSkillRef(skill)
-	return S.get_skill_parry_modifier(known_skills[S] || SKILL_LEVEL_NONE)
-
-/datum/mind/proc/get_skill_dodge_drain(skill)
-	var/datum/skill/combat/S = GetSkillRef(skill)
-	return S.get_skill_dodge_drain(known_skills[S] || SKILL_LEVEL_NONE)
-
 /datum/mind/proc/print_levels(user)
 	var/list/shown_skills = list()
 	for(var/i in known_skills)
@@ -433,12 +421,14 @@
 		return
 	var/msg = ""
 	msg += span_info("*---------*\n")
-	for(var/datum/i in shown_skills)
+	for(var/datum/skill/i in shown_skills)
 		var/can_advance_post = sleep_adv.enough_sleep_xp_to_advance(i.type, 1)
 		var/capped_post = sleep_adv.enough_sleep_xp_to_advance(i.type, 2)
 		var/rankup_postfix = capped_post ? span_nicegreen(" <b>(!!)</b>") : can_advance_post ? span_nicegreen(" <b>(!)</b>") : ""
-		msg += "[i] - [SSskills.level_names[known_skills[i]]][rankup_postfix]\n"
+		msg += "[i] - [SSskills.level_names[known_skills[i]]][rankup_postfix]"
+		msg += span_info(" <a href='?src=[REF(i)];skill_detail=1'>{?}</a>\n")
 	msg += "</span>"
+
 	to_chat(user, msg)
 
 

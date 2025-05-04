@@ -178,6 +178,8 @@
 
 	next_attack_msg.Cut()
 
+	user.do_attack_animation(src, "bite")
+	playsound(user, 'sound/gore/flesh_eat_01.ogg', 100)
 	var/nodmg = FALSE
 	var/dam2do = 10*(user.STASTR/20)
 	if(HAS_TRAIT(user, TRAIT_STRONGBITE))
@@ -266,9 +268,6 @@
 					return
 				if(A == src)
 					return
-				if(isliving(A))
-					if(!(mobility_flags & MOBILITY_STAND) && pulledby)
-						return
 				if(IsOffBalanced())
 					to_chat(src, span_warning("I haven't regained my balance yet."))
 					return
@@ -337,10 +336,12 @@
 				var/jadded
 				var/jrange
 				var/jextra = FALSE
+				var/is_sprinting = FALSE
 				if(m_intent == MOVE_INTENT_RUN)
 					OffBalance(30)
 					jadded = 15
 					jrange = 3
+					is_sprinting = TRUE
 					if(!HAS_TRAIT(src, TRAIT_LEAPER))// The Jester lands where the Jester wants.
 						jextra = TRUE
 				else
@@ -363,6 +364,8 @@
 						throw_at(A, jrange, 1, src, spin = FALSE)
 						while(src.throwing)
 							sleep(1)
+					if(!HAS_TRAIT(src, TRAIT_ZJUMP) && is_sprinting)	//Jesters and werewolves don't get immobilized at all
+						Immobilize((HAS_TRAIT(src, TRAIT_LEAPER) ? 5 : 10))	//Acrobatics get half the time
 					if(isopenturf(src.loc))
 						var/turf/open/T = src.loc
 						if(T.landsound)

@@ -33,12 +33,12 @@
 			if(oldname == input)
 				to_chat(user, span_notice("I changed \the [O.name] to... well... \the [O.name]."))
 			else
-				O.name = "[input] ([oldname])"
+				O.name = "[input] ([initial(O.name)])"
 				to_chat(user, span_notice("\The [oldname] has been successfully been renamed to \the [input]."))
 				O.renamedByPlayer = TRUE
 
 		if(penchoice == "Change description")
-			var/input = stripped_input(user,"Describe \the [O.name] here", ,"", 100)
+			var/input = stripped_input(user,"Describe \the [O.name] here", ,"", 250)
 			if(QDELETED(O) || !user.canUseTopic(O, BE_CLOSE))
 				return
 			O.desc = input

@@ -55,6 +55,8 @@
 
 //click cooldowns, in tenths of a second, used for various combat actions
 #define CLICK_CD_EXHAUSTED 60
+#define CLICK_CD_TRACKING 30
+#define CLICK_CD_SLEUTH 10
 #define CLICK_CD_MELEE 12
 #define CLICK_CD_FAST 8
 #define CLICK_CD_RANGE 4
@@ -135,6 +137,7 @@
 #define SWORD_THRUST	 /datum/intent/sword/thrust
 #define SWORD_CHOP		 /datum/intent/sword/chop //2h swords only
 #define SWORD_STRIKE	 /datum/intent/sword/strike //mordhau grip
+#define SWORD_PEEL		/datum/intent/sword/peel
 
 #define ELFSWORD_CUT		/datum/intent/sword/cut/elf
 #define ELFSWORD_THRUST		/datum/intent/sword/thrust/elf
@@ -189,6 +192,7 @@
 #define BCLASS_PUNCH		"punch"
 #define BCLASS_BITE			"bite"
 #define BCLASS_BURN			"charring"
+#define BCLASS_PEEL			"peel"
 
 //Material class (what material is striking)
 #define MCLASS_GENERIC		1

@@ -8,6 +8,7 @@
 	var/datum/looping_sound/soundloop = null // = /datum/looping_sound/fireloop
 	pass_flags = LETPASSTHROW
 	flags_1 = NODECONSTRUCT_1
+	var/no_refuel = FALSE // For special holder that don't actually refuel
 	var/cookonme = FALSE
 	var/crossfire = TRUE
 	var/can_damage = FALSE
@@ -107,6 +108,8 @@
 	fire_act()
 
 /obj/machinery/light/rogue/attackby(obj/item/W, mob/living/user, params)
+	var/datum/skill/craft/cooking/cs = user?.mind?.get_skill_level(/datum/skill/craft/cooking)
+	var/cooktime_divisor = get_cooktime_divisor(cs)
 	if(cookonme)
 		if(istype(W, /obj/item/reagent_containers/food/snacks))
 			if(istype(W, /obj/item/reagent_containers/food/snacks/egg))
@@ -126,16 +129,16 @@
 						prob2spoil = 1
 					user.visible_message("<span class='notice'>[user] starts to cook [W] over [src].</span>")
 					for(var/i in 1 to 6)
-						if(do_after(user, 30, target = src))
+						if(do_after(user, 30 / cooktime_divisor, target = src))
 							var/obj/item/reagent_containers/food/snacks/S = W
 							var/obj/item/C
 							if(prob(prob2spoil))
 								user.visible_message("<span class='warning'>[user] burns [S].</span>")
 								if(user.client?.prefs.showrolls)
 									to_chat(user, "<span class='warning'>Critfail... [prob2spoil]%.</span>")
-								C = S.cooking(1000, null)
+								C = S.cooking(1000, 1000, null)
 							else
-								C = S.cooking(S.cooktime/4, src)
+								C = S.cooking(S.cooktime/4, S.cooktime/4, src)
 							if(C)
 								user.dropItemToGround(S, TRUE)
 								qdel(S)
@@ -145,9 +148,20 @@
 						else
 							break
 					return
-	if(W.firefuel)
-		if (alert(usr, "Fuel the [src] with [W]?", "ROGUETOWN", "Fuel", "Smelt") != "Fuel")
-			return TRUE //returns true if the answer is no, we don't want to feed it
+	if(W.firefuel && !no_refuel)
+		if(W.smeltresult) // For things with actual smelt results - functionally no differences
+			if(alert(usr, "Fuel [src] with [W]?", "ROGUETOWN", "Fuel", "Smelt") != "Fuel")
+				return TRUE
+		if(alert(usr, "Fuel [src] with [W]?", "ROGUETOWN", "Yes", "No") != "Yes")
+			return TRUE
+		if(!W)
+			return
+		if(user.get_active_held_item() != W)
+			to_chat(user, span_warning("That item is no longer in my hand..."))
+			return
+
+		user.dropItemToGround(W)
+
 		if(initial(fueluse))
 			if(fueluse > initial(fueluse) - 5 SECONDS)
 				to_chat(user, "<span class='warning'>[src] is fully fueled.</span>")

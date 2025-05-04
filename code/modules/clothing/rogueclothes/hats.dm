@@ -5,12 +5,14 @@
 	icon_state = "top_hat"
 	item_state = "that"
 	body_parts_covered = HEAD|HAIR
+	body_parts_inherent = HEAD
 	slot_flags = ITEM_SLOT_HEAD|ITEM_SLOT_HIP
 	dynamic_hair_suffix = "+generic"
 	bloody_icon_state = "helmetblood"
-	experimental_onhip = TRUE
+	experimental_onhip = FALSE
 	var/mask_override = FALSE //override if we want to always respect our inv flags if the helm is in a mask slot
 	experimental_inhand = FALSE
+	var/hidesnoutADJ = FALSE
 
 /obj/item/clothing/head/roguetown/equipped(mob/user, slot)
 	. = ..()
@@ -81,6 +83,7 @@
 	edelay_type = 1
 	adjustable = CAN_CADJUST
 	toggle_icon_state = TRUE
+	hidesnoutADJ = TRUE
 	blocksound = SOFTHIT
 	max_integrity = 100
 	sewrepair = TRUE
@@ -95,6 +98,32 @@
 	desc = "Flowing like blood from a wound, this tithe of cloth-and-silk spills out to the shoulders. It carries the telltale mark of Naledian stitcheries."
 	item_state = "hijab"
 	icon_state = "deserthood"
+	hidesnoutADJ = FALSE
+
+/obj/item/clothing/head/roguetown/roguehood/shalal/hijab/AdjustClothes(mob/user)	//Only differences from parent are the absence of HIDEFACE flag and FOV flags
+	if(loc == user)
+		if(adjustable == CAN_CADJUST)
+			adjustable = CADJUSTED
+			if(toggle_icon_state)
+				icon_state = "[initial(icon_state)]_t"
+			flags_inv = HIDEEARS|HIDEHAIR|HIDEFACIALHAIR
+			body_parts_covered = NECK|HAIR|EARS|HEAD
+			if(ishuman(user))
+				var/mob/living/carbon/H = user
+				H.update_inv_head()
+				H.update_inv_wear_mask() //Snowflake case for Desert Merc hood
+		else if(adjustable == CADJUSTED)
+			ResetAdjust(user)
+			if(mask_override == TRUE)
+				flags_inv = initial(flags_inv)
+			else
+				flags_inv = null
+			if(user)
+				if(ishuman(user))
+					var/mob/living/carbon/H = user
+					H.update_inv_head()
+					H.update_inv_wear_mask() //Snowflake case for Desert Merc hood
+	
 
 /obj/item/clothing/head/roguetown/roguehood/shalal/heavyhood
 	name = "heavy hood"
@@ -103,6 +132,7 @@
 	color = CLOTHING_BROWN
 	item_state = "heavyhood"
 	icon_state = "heavyhood"
+	hidesnoutADJ = FALSE
 
 /obj/item/clothing/head/roguetown/roguehood/astrata
 	name = "sun hood"
@@ -201,7 +231,7 @@
 
 /obj/item/clothing/head/roguetown/priestmask/pickup(mob/living/user)
 	..()
-	if((user.job != "Priest") && (user.job != "Priestess"))
+	if(!HAS_TRAIT(user, TRAIT_CHOSEN))
 		to_chat(user, "<font color='yellow'>UNWORTHY HANDS TOUCH THE VISAGE, CEASE OR BE PUNISHED</font>")
 		spawn(30)
 			if(loc == user)
@@ -232,6 +262,8 @@
 			if(toggle_icon_state)
 				icon_state = "[initial(icon_state)]_t"
 			flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+			if(hidesnoutADJ == TRUE)
+				flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 			body_parts_covered = NECK|HAIR|EARS|HEAD
 			if(ishuman(user))
 				var/mob/living/carbon/H = user
@@ -270,13 +302,40 @@
 	desc = "A funny-looking hat with jingly bells attached to it."
 	icon_state = "jester"
 	item_state = "jester"
+	detail_tag = "_detail"
+	altdetail_tag = "_detailalt"
 	dynamic_hair_suffix = "+generic"
 	sewrepair = TRUE
 	flags_inv = HIDEEARS
+	detail_color = CLOTHING_WHITE
+	color = CLOTHING_AZURE
+	altdetail_color = CLOTHING_WHITE
+
+/obj/item/clothing/head/roguetown/jester/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
+
+/obj/item/clothing/head/roguetown/jester/lordcolor(primary,secondary)
+	detail_color = secondary
+	color = primary
+	update_icon()
 
 /obj/item/clothing/head/roguetown/jester/Initialize()
 	. = ..()
 	AddComponent(/datum/component/item_equipped_movement_rustle, SFX_JINGLE_BELLS, 2)
+	if(GLOB.lordprimary)
+		lordcolor(GLOB.lordprimary,GLOB.lordsecondary)
+	else
+		GLOB.lordcolor += src
+
+/obj/item/clothing/head/roguetown/jester/jester/Destroy()
+	GLOB.lordcolor -= src
+	return ..()
 
 /obj/item/clothing/head/roguetown/strawhat
 	name = "straw hat"
@@ -359,7 +418,7 @@
 
 /obj/item/clothing/head/roguetown/chaperon
 	name = "chaperon hat"
-	desc = "A fancy hat worn by nobles."
+	desc = "A fashionable hat traditionally made from a hood, usually worn by the rich."
 	icon_state = "chaperon"
 	item_state = "chaperon"
 	sewrepair = TRUE
@@ -374,17 +433,34 @@
 
 /obj/item/clothing/head/roguetown/chaperon/greyscale
 	name = "chaperon hat"
-	desc = "A fancy hat worn by nobles."
+	desc = "A fashionable hat traditionally made from a hood, usually worn by the rich."
 	icon_state = "chap_alt"
 	item_state = "chap_alt"
-	color = "#cf99e3"
+	color = "#dbcde0"
 
-/obj/item/clothing/head/roguetown/chaperon/bailiff
-	name = "chaperon hat"
-	desc = "A fancy hat worn by nobles."
-	icon_state = "chap_alt"
-	item_state = "chap_alt"
-	color = "#C0392B"
+/obj/item/clothing/head/roguetown/chaperon/noble
+	name = "noble's chaperon"
+	desc = "A decorated chaperon worn by those more influential in society."
+	icon_state = "noblechaperon"
+	item_state = "noblechaperon"
+	detail_tag = "_detail"
+	color = CLOTHING_WHITE
+	detail_color = COLOR_ASSEMBLY_GOLD
+
+/obj/item/clothing/head/roguetown/chaperon/noble/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
+
+/obj/item/clothing/head/roguetown/chaperon/noble/bailiff
+	name = "Marshal's chaperon"
+	desc = "A noble's chaperon made for the local Marshal. \"How terribly unfortunate you are!\""
+	color = "#641E16"
+	detail_color = "#b68e37ff"
 
 /obj/item/clothing/head/roguetown/chaperon/councillor
 	name = "chaperon hat"
@@ -587,6 +663,18 @@
 	max_integrity = 200
 	grid_height = 64
 	grid_width = 64
+	experimental_onhip = TRUE
+	experimental_inhand = TRUE
+
+/obj/item/clothing/head/roguetown/helmet/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.5,"sx" = -5,"sy" = -3,"nx" = 0,"ny" = 0,"wx" = 0,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("onbelt")
+				return list("shrink" = 0.42,"sx" = -3,"sy" = -8,"nx" = 6,"ny" = -8,"wx" = -1,"wy" = -8,"ex" = 3,"ey" = -8,"nturn" = 180,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 1,"sflip" = 0,"wflip" = 0,"eflip" = 8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
+	
 
 /obj/item/clothing/head/roguetown/helmet/skullcap
 	name = "skull cap"
@@ -616,6 +704,11 @@
 	icon_state = "kettle"
 	body_parts_covered = HEAD|HAIR|EARS
 	armor = list("blunt" = 80, "slash" = 90, "piercing" = 30, "stab" = 70, "fire" = 0, "acid" = 0)
+
+/obj/item/clothing/head/roguetown/helmet/kettle/wide
+	name = "wide kettle helmet"
+	desc = "A steel helmet which protects the top and sides of the head. This one looks wider than others."
+	icon_state = "kettlewide"
 
 /obj/item/clothing/head/roguetown/helmet/kettle/attackby(obj/item/W, mob/living/user, params)
 	..()
@@ -794,6 +887,15 @@
 	block2add = FOV_BEHIND
 	smeltresult = /obj/item/ingot/steel
 	smelt_bar_num = 2
+	max_integrity = 300
+
+/obj/item/clothing/head/roguetown/helmet/otavan/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -5,"sy" = -3,"nx" = 0,"ny" = 0,"wx" = 0,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("onbelt")
+				return list("shrink" = 0.32,"sx" = -3,"sy" = -8,"nx" = 6,"ny" = -8,"wx" = -1,"wy" = -8,"ex" = 3,"ey" = -8,"nturn" = 180,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 1,"sflip" = 0,"wflip" = 0,"eflip" = 8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 
 /obj/item/clothing/head/roguetown/helmet/otavan/AdjustClothes(mob/user)
 	if(loc == user)
@@ -834,12 +936,55 @@
 	smeltresult = /obj/item/ingot/steel
 	max_integrity = 400
 
+/obj/item/clothing/head/roguetown/helmet/heavy/matthios
+	name = "gilded visage"
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/64x64/head.dmi'
+	desc = "All that glitters is not gold,"
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT|HIDEHAIR|HIDEFACIALHAIR
+	icon_state = "matthioshelm"
+	max_integrity = 600
+	worn_x_dimension = 64
+	worn_y_dimension = 64
+	bloody_icon = 'icons/effects/blood64.dmi'
+	experimental_inhand = FALSE
+	experimental_onhip = FALSE
+
+
+/obj/item/clothing/head/roguetown/helmet/heavy/matthios/pickup(mob/living/user)
+	if(!HAS_TRAIT(user, TRAIT_COMMIE))
+		to_chat(user, "<font color='yellow'>UNWORTHY HANDS TOUCH THE VISAGE, CEASE OR BE PUNISHED</font>")
+		user.adjust_fire_stacks(5)
+		user.IgniteMob()
+		user.Stun(40)
+	..()
+
 /obj/item/clothing/head/roguetown/helmet/heavy/zizo
 	name = "darksteel barbute"
 	desc = "A darksteel barbute. This one has an adjustable visor. Called forth from the edge of what should be known. In Her name."
 	adjustable = CAN_CADJUST
 	icon_state = "zizobarbute"
 	max_integrity = 600
+	peel_threshold = 4
+	var/frogstyle = FALSE
+
+/obj/item/clothing/head/roguetown/helmet/heavy/zizo/MiddleClick(mob/user)
+	frogstyle = !frogstyle
+	to_chat(user, span_info("My darksteel helmet shifts into the style of [frogstyle ? "a froggemund" : "a barbute"]."))
+	if(frogstyle)
+		icon_state = "zizofrogmouth"
+		name = "darksteel froggemund"
+		desc = "A darksteel froggemund. Called forth from the edge of what should be known. In Her name."
+		flags_inv = HIDEFACE|HIDESNOUT|HIDEEARS 
+		body_parts_covered = HEAD|EARS|HAIR
+		adjustable = FALSE
+	else
+		icon_state = "zizobarbute"
+		name = "darksteel barbute"
+		desc = "A darksteel barbute. This one has an adjustable visor. Called forth from the edge of what should be known. In Her name."
+		adjustable = CAN_CADJUST
+	update_icon()
+	user.update_inv_head()
+
 
 /obj/item/clothing/head/roguetown/helmet/heavy/zizo/pickup(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_CABAL))
@@ -851,6 +996,8 @@
 
 /obj/item/clothing/head/roguetown/helmet/heavy/zizo/AdjustClothes(mob/user)
 	if(loc == user)
+		if(frogstyle)
+			return
 		playsound(user, "sound/items/visor.ogg", 100, TRUE, -1)
 		if(adjustable == CAN_CADJUST)
 			adjustable = CADJUSTED
@@ -864,7 +1011,7 @@
 			block2add = null
 		else if(adjustable == CADJUSTED)
 			ResetAdjust(user)
-			flags_inv = HIDEFACE|HIDESNOUT
+			flags_inv = HIDEFACE|HIDESNOUT|HIDEEARS
 			if(user)
 				if(ishuman(user))
 					var/mob/living/carbon/H = user
@@ -1002,6 +1149,80 @@
 					H.update_inv_head()
 		user.update_fov_angles()
 
+/obj/item/clothing/head/roguetown/helmet/heavy/knight/armet/attackby(obj/item/W, mob/living/user, params)
+	..()
+	if(istype(W, /obj/item/natural/feather) && !detail_tag)
+		var/list/colors = list(
+		"Swan White"="#ffffff",
+		"Lavender"="#865c9c",
+		"Royal Purple"="#5E4687",
+		"Wine Rouge"="#752B55",
+		"Sow's skin"="#CE929F",
+		"Knight's Red"="#933030",
+		"Madroot Red"="#AD4545",
+		"Marigold Orange"="#E2A844",
+		"Politely, Yuck"="#685542",
+		"Astrata's Yellow"="#FFFD8D",
+		"Bog Green"="#375B48",
+		"Seafoam Green"="#49938B",
+		"Woad Blue"="#395480",
+		"Cornflower Blue"="#749EE8",
+		"Blacksteel Grey"="#404040",)
+
+		var/choice = input(user, "Choose a color.", "Plume") as anything in colors
+		detail_color = colors[choice]
+		detail_tag = "_detail"
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+	if(istype(W, /obj/item/natural/cloth) && !altdetail_tag)
+		var/list/altcolors = list(
+		"Swan White"="#ffffff",
+		"Lavender"="#865c9c",
+		"Royal Purple"="#5E4687",
+		"Wine Rouge"="#752B55",
+		"Sow's skin"="#CE929F",
+		"Knight's Red"="#933030",
+		"Madroot Red"="#AD4545",
+		"Marigold Orange"="#E2A844",
+		"Politely, Yuck"="#685542",
+		"Astrata's Yellow"="#FFFD8D",
+		"Bog Green"="#375B48",
+		"Seafoam Green"="#49938B",
+		"Woad Blue"="#395480",
+		"Cornflower Blue"="#749EE8",
+		"Blacksteel Grey"="#404040",)
+		var/choicealt = input(user, "Choose a color.", "Orle") as anything in altcolors
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		altdetail_color = altcolors[choicealt]
+		altdetail_tag = "_detailalt"
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+
+
+/obj/item/clothing/head/roguetown/helmet/heavy/knight/armet/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
+	if(get_altdetail_tag())
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon, "[icon_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(get_altdetail_color())
+			pic2.color = get_altdetail_color()
+		add_overlay(pic2)
+
+
+
 /obj/item/clothing/head/roguetown/helmet/heavy/bucket/gold
 	name = "golden helmet"
 	icon_state = "topfhelm_gold"
@@ -1079,12 +1300,54 @@
 	item_state = "psydonbarbute"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDESNOUT
 
+/obj/item/clothing/head/roguetown/helmet/heavy/psydonbarbute/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -5,"sy" = -3,"nx" = 0,"ny" = 0,"wx" = 0,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("onbelt")
+				return list("shrink" = 0.32,"sx" = -3,"sy" = -8,"nx" = 6,"ny" = -8,"wx" = -1,"wy" = -8,"ex" = 3,"ey" = -8,"nturn" = 180,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 1,"sflip" = 0,"wflip" = 0,"eflip" = 8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
 /obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm
 	name = "psydonian armet"
 	desc = "An ornate helmet, whose visor has been bound shut with blacksteel chains. The Order of Saint Eora often decorates these armets with flowers - not only as a lucky charm gifted to them by fair maidens and family, but also as a vibrant reminder that 'happiness has to be fought for.'"
 	icon_state = "psydonarmet"
 	item_state = "psydonarmet"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDESNOUT
+	adjustable = CAN_CADJUST
+
+/obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -5,"sy" = -3,"nx" = 0,"ny" = 0,"wx" = 0,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("onbelt")
+				return list("shrink" = 0.32,"sx" = -3,"sy" = -8,"nx" = 6,"ny" = -8,"wx" = -1,"wy" = -8,"ex" = 3,"ey" = -8,"nturn" = 180,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 1,"sflip" = 0,"wflip" = 0,"eflip" = 8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
+/obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm/AdjustClothes(mob/user)
+	if(loc == user)
+		playsound(user, "sound/items/visor.ogg", 100, TRUE, -1)
+		if(adjustable == CAN_CADJUST)
+			adjustable = CADJUSTED
+			icon_state = "psydonarmet_raised"
+			body_parts_covered = HEAD|HAIR|EARS
+			flags_inv = HIDEEARS
+			flags_cover = null
+			emote_environment = 0
+			update_icon()
+			if(ishuman(user))
+				var/mob/living/carbon/H = user
+				H.update_inv_head()
+			block2add = null
+		else if(adjustable == CADJUSTED)
+			ResetAdjust(user)
+			emote_environment = 3
+			update_icon()
+			if(user)
+				if(ishuman(user))
+					var/mob/living/carbon/H = user
+					H.update_inv_head()
+		user.update_fov_angles()
 
 /obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm/attackby(obj/item/W, mob/living/user, params)
 	..()
@@ -1115,6 +1378,33 @@
 		if(loc == user && ishuman(user))
 			var/mob/living/carbon/H = user
 			H.update_inv_head()
+	if(istype(W, /obj/item/natural/feather) && !altdetail_tag)
+		var/list/altcolors = list(
+		"Swan White"="#ffffff",
+		"Lavender"="#865c9c",
+		"Royal Purple"="#5E4687",
+		"Wine Rouge"="#752B55",
+		"Sow's skin"="#CE929F",
+		"Knight's Red"="#933030",
+		"Madroot Red"="#AD4545",
+		"Marigold Orange"="#E2A844",
+		"Politely, Yuck"="#685542",
+		"Astrata's Yellow"="#FFFD8D",
+		"Bog Green"="#375B48",
+		"Seafoam Green"="#49938B",
+		"Woad Blue"="#395480",
+		"Cornflower Blue"="#749EE8",
+		"Blacksteel Grey"="#404040",)
+
+		var/choicealt = input(user, "Choose a color.", "Plume") as anything in altcolors
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		altdetail_color = altcolors[choicealt]
+		altdetail_tag = "_detailalt"
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
 
 /obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm/update_icon()
 	cut_overlays()
@@ -1124,6 +1414,12 @@
 		if(get_detail_color())
 			pic.color = get_detail_color()
 		add_overlay(pic)
+	if(get_altdetail_tag())
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon, "[icon_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(get_altdetail_color())
+			pic2.color = get_altdetail_color()
+		add_overlay(pic2)
 
 /obj/item/clothing/head/roguetown/helmet/heavy/nochelm
 	name = "noc helmet"
@@ -1265,6 +1561,7 @@
 	desc = "A bascinet with a conical visor, prominent amongst those who remain unburdened with snouts and whiskers. Nestle a feather onto the rim to bare your pride."
 	icon_state = "bascinet"
 
+
 /obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull/AdjustClothes(mob/user)
 	if(loc == user)
 		playsound(user, "sound/items/visor.ogg", 100, TRUE, -1)
@@ -1291,6 +1588,64 @@
 		user.update_fov_angles()
 
 
+/obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull/attackby(obj/item/W, mob/living/user, params)
+	..()
+	if(istype(W, /obj/item/natural/feather) && !detail_tag)
+		var/list/colors = list(
+		"Swan White"="#ffffff",
+		"Lavender"="#865c9c",
+		"Royal Purple"="#5E4687",
+		"Wine Rouge"="#752B55",
+		"Sow's skin"="#CE929F",
+		"Knight's Red"="#933030",
+		"Madroot Red"="#AD4545",
+		"Marigold Orange"="#E2A844",
+		"Politely, Yuck"="#685542",
+		"Astrata's Yellow"="#FFFD8D",
+		"Bog Green"="#375B48",
+		"Seafoam Green"="#49938B",
+		"Woad Blue"="#395480",
+		"Cornflower Blue"="#749EE8",
+		"Blacksteel Grey"="#404040",)
+
+		var/choice = input(user, "Choose a color.", "Plume") as anything in colors
+		detail_color = colors[choice]
+		detail_tag = "_detail"
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+	if(istype(W, /obj/item/natural/cloth) && !altdetail_tag)
+		var/list/altcolors = list(
+		"Swan White"="#ffffff",
+		"Lavender"="#865c9c",
+		"Royal Purple"="#5E4687",
+		"Wine Rouge"="#752B55",
+		"Sow's skin"="#CE929F",
+		"Knight's Red"="#933030",
+		"Madroot Red"="#AD4545",
+		"Marigold Orange"="#E2A844",
+		"Politely, Yuck"="#685542",
+		"Astrata's Yellow"="#FFFD8D",
+		"Bog Green"="#375B48",
+		"Seafoam Green"="#49938B",
+		"Woad Blue"="#395480",
+		"Cornflower Blue"="#749EE8",
+		"Blacksteel Grey"="#404040",)
+
+		var/choicealt = input(user, "Choose a color.", "Orle") as anything in altcolors
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		altdetail_color = altcolors[choicealt]
+		altdetail_tag = "_detailalt"
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+
+
 /obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull/update_icon()
 	cut_overlays()
 	if(get_detail_tag())
@@ -1299,6 +1654,12 @@
 		if(get_detail_color())
 			pic.color = get_detail_color()
 		add_overlay(pic)
+	if(get_altdetail_tag())
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon, "[icon_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(get_altdetail_color())
+			pic2.color = get_altdetail_color()
+		add_overlay(pic2)
 
 /obj/item/clothing/head/roguetown/helmet/bascinet/etruscan
 	name = "\improper Etruscan bascinet"
@@ -1313,6 +1674,45 @@
 	block2add = FOV_BEHIND
 	smeltresult = /obj/item/ingot/steel
 	smelt_bar_num = 2
+
+/obj/item/clothing/head/roguetown/helmet/bascinet/etruscan/attackby(obj/item/W, mob/living/user, params)
+	..()
+	if(istype(W, /obj/item/natural/cloth) && !detail_tag)
+		var/list/colors = list(
+		"Swan White"="#ffffff",
+		"Lavender"="#865c9c",
+		"Royal Purple"="#5E4687",
+		"Wine Rouge"="#752B55",
+		"Sow's skin"="#CE929F",
+		"Knight's Red"="#933030",
+		"Madroot Red"="#AD4545",
+		"Marigold Orange"="#E2A844",
+		"Politely, Yuck"="#685542",
+		"Astrata's Yellow"="#FFFD8D",
+		"Bog Green"="#375B48",
+		"Seafoam Green"="#49938B",
+		"Woad Blue"="#395480",
+		"Cornflower Blue"="#749EE8",
+		"Blacksteel Grey"="#404040",)
+
+		var/choice = input(user, "Choose a color.", "Orle") as anything in colors
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		detail_color = colors[choice]
+		detail_tag = "_detail"
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+
+/obj/item/clothing/head/roguetown/helmet/bascinet/etruscan/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
 
 /obj/item/clothing/head/roguetown/helmet/bascinet/etruscan/AdjustClothes(mob/user)
 	if(loc == user)
@@ -1351,21 +1751,6 @@
 	max_integrity = 450
 	smeltresult = /obj/item/ingot/steel
 	smelt_bar_num = 2
-
-/obj/item/clothing/head/roguetown/helmet/heavy/frogmouth/zizo
-	name = "darksteel froggemund"
-	desc = "A sleek and imposing darksteel froggemund. Called forth from the edge of what should be known. In Her name."
-	max_integrity = 650
-	icon_state = "zizofrogmouth"
-
-
-/obj/item/clothing/head/roguetown/helmet/heavy/frogmouth/zizo/pickup(mob/living/user)
-	if(!HAS_TRAIT(user, TRAIT_CABAL))
-		to_chat(user, "<font color='purple'>UNWORTHY HANDS TOUCH THE HELMET, CEASE OR BE PUNISHED</font>")
-		user.adjust_fire_stacks(5)
-		user.IgniteMob()
-		user.Stun(40)
-	..()
 
 /obj/item/clothing/head/roguetown/helmet/heavy/frogmouth/attackby(obj/item/W, mob/living/user, params)
 	..()
@@ -1414,7 +1799,7 @@
 	emote_environment = 3
 	body_parts_covered = HEAD|HAIR|EARS
 	flags_inv = HIDEHAIR
-	block2add = FOV_BEHIND
+	block2add = null
 	smeltresult = /obj/item/ingot/steel
 
 /obj/item/clothing/head/roguetown/helmet/leather
@@ -1457,6 +1842,8 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
 	flags_cover = HEADCOVERSEYES
 	body_parts_covered = HEAD|EARS|HAIR|NOSE|EYES
+	experimental_inhand = FALSE
+	experimental_onhip = FALSE
 
 /obj/item/clothing/head/roguetown/helmet/leather/minershelm
 	name = "leather miners helmet"
@@ -1794,6 +2181,9 @@
 	desc = "A feathered leather hat, to show them all your superiority."
 	icon_state = "duelhat"
 	sewrepair = TRUE
+	color = COLOR_ALMOST_BLACK	
+	detail_tag = "_detail"
+	detail_color = COLOR_SILVER
 	salvage_result = /obj/item/natural/hide/cured
 
 
@@ -1830,11 +2220,26 @@
 					H.update_inv_head()
 		user.update_fov_angles()
 
+/obj/item/clothing/head/roguetown/helmet/leather/advanced
+	name = "hardened leather helmet"
+	desc = "Sturdy, durable, flexible. A comfortable and reliable hood made of hardened leather."
+	icon_state = "leatherhelm"
+	max_integrity = 250
+	body_parts_covered = HEAD|EARS|HAIR|NOSE
+	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
+	armor = list("blunt" = 70, "slash" = 60, "stab" = 30, "piercing" = 20, "fire" = 0, "acid" = 0)
+	slot_flags = ITEM_SLOT_HEAD|ITEM_SLOT_HIP
+	anvilrepair = null
+	smeltresult = null
+	sewrepair = TRUE
+	blocksound = SOFTHIT
+	salvage_result = /obj/item/natural/hide/cured
+
 /obj/item/clothing/head/roguetown/helmet/heavy/elven_helm
 	name = "woad elven helm"
 	desc = "An assembly of woven trunk, kept alive by ancient song, now twisted and warped for battle and scorn."
 	body_parts_covered = FULL_HEAD | NECK
-	armor = list("blunt" = 100, "slash" = 20, "stab" = 100, "piercing" = 40, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 120, "slash" = 20, "stab" = 110, "piercing" = 40, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_BLUNT, BCLASS_SMASH, BCLASS_TWIST, BCLASS_PICK)
 	icon = 'icons/roguetown/clothing/special/race_armor.dmi'
 	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/race_armor.dmi'
@@ -1842,6 +2247,77 @@
 	item_state = "welfhead"
 	block2add = FOV_BEHIND
 	bloody_icon = 'icons/effects/blood64.dmi'
+	drop_sound = 'sound/foley/dropsound/wooden_drop.ogg'
 	smeltresult = /obj/item/rogueore/coal
+	anvilrepair = /datum/skill/craft/carpentry
 	max_integrity = 300
 	blocksound = SOFTHIT
+	experimental_inhand = FALSE
+	experimental_onhip = FALSE
+
+
+/obj/item/clothing/head/roguetown/helmet/elvenbarbute
+	slot_flags = ITEM_SLOT_HEAD|ITEM_SLOT_HIP
+	name = "elven barbute"
+	desc = "It fits snugly on one's elven head, with special slots for their pointier ears."
+	body_parts_covered = FULL_HEAD
+	body_parts_covered = HEAD|HAIR|NOSE
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	icon_state = "elven_barbute_full"
+	item_state = "elven_barbute_full"
+	armor = list("blunt" = 90, "slash" = 50, "stab" = 60, "piercing" = 90, "fire" = 0, "acid" = 0)
+	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST)
+	clothing_flags = 0
+	block2add = FOV_BEHIND
+
+/obj/item/clothing/head/roguetown/helmet/elvenbarbute/winged
+	name = "winged elven barbute"
+	desc = "A winged version of the elven barbute. They have always been known for their vanity."
+	icon_state = "elven_barbute_winged"
+	item_state = "elven_barbute_winged"
+
+/obj/item/clothing/head/roguetown/helmet/bascinet/antler
+	name = "wardens's helmet"
+	desc = "A strange helmet adorned with antlers worn by the warden of the forest."
+	icon = 'icons/roguetown/clothing/special/warden.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/warden64.dmi'
+	bloody_icon = 'icons/effects/blood64.dmi'
+	icon_state = "wardenhelm"
+	adjustable = CAN_CADJUST
+	worn_x_dimension = 64
+	worn_y_dimension = 64
+	body_parts_covered = FULL_HEAD
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	block2add = FOV_BEHIND
+	smeltresult = /obj/item/ingot/steel
+	smelt_bar_num = 2
+	experimental_inhand = FALSE
+	experimental_onhip = FALSE
+
+/obj/item/clothing/head/roguetown/helmet/bascinet/antler/AdjustClothes(mob/user)
+	if(loc == user)
+		playsound(user, "sound/items/visor.ogg", 100, TRUE, -1)
+		if(adjustable == CAN_CADJUST)
+			adjustable = CADJUSTED
+			icon_state = "wardenhelm_raised"
+			body_parts_covered = HEAD|EARS|HAIR
+			flags_inv = HIDEEARS|HIDEHAIR
+			flags_cover = null
+			emote_environment = 0
+			update_icon()
+			if(ishuman(user))
+				var/mob/living/carbon/H = user
+				H.update_inv_head()
+			block2add = null
+		else if(adjustable == CADJUSTED)
+			ResetAdjust(user)
+			emote_environment = 3
+			update_icon()
+			if(user)
+				if(ishuman(user))
+					var/mob/living/carbon/H = user
+					H.update_inv_head()
+		user.update_fov_angles()
+ 

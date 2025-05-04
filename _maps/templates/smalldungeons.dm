@@ -113,7 +113,7 @@
 		/obj/item/flint = 4,
 		/obj/item/rogueweapon/stoneaxe/woodcut = 3,
 		/obj/item/rogueweapon/stoneaxe = 3,
-		/obj/item/rogueweapon/hammer = 3,
+		/obj/item/rogueweapon/hammer/stone = 3,
 		/obj/item/rogueweapon/tongs = 3,
 		/obj/item/rogueweapon/pick = 3,
 
@@ -288,7 +288,7 @@
 		/obj/item/flint = 4,
 		/obj/item/rogueweapon/stoneaxe/woodcut = 3,
 		/obj/item/rogueweapon/stoneaxe = 3,
-		/obj/item/rogueweapon/hammer = 3,
+		/obj/item/rogueweapon/hammer/stone = 3,
 		/obj/item/rogueweapon/tongs = 3,
 		/obj/item/rogueweapon/pick = 3
 	)
@@ -344,7 +344,7 @@
 		/obj/item/book/granter/spell/blackstone/bonechill = 5,
 		/obj/item/book/granter/spell/blackstone/featherfall = 5,
 		/obj/item/book/granter/spell/blackstone/sicknessray = 5,
-		/obj/item/book/granter/spell/blackstone/poisonspray5e = 5,
+		/obj/item/book/granter/spell/blackstone/aerosolize = 5,
 		/obj/item/book/granter/spell/blackstone/frostbolt = 5,
 		/obj/item/book/granter/spell/blackstone/forcewall_weak = 4,
 		/obj/item/book/granter/spell/blackstone/guidance = 4,

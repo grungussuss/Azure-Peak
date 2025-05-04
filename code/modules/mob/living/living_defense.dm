@@ -1,6 +1,6 @@
 
-/mob/living/proc/run_armor_check(def_zone = null, attack_flag = "blunt", absorb_text = null, soften_text = null, armor_penetration, penetrated_text, damage, blade_dulling)
-	var/armor = getarmor(def_zone, attack_flag, damage, armor_penetration, blade_dulling)
+/mob/living/proc/run_armor_check(def_zone = null, attack_flag = "blunt", absorb_text = null, soften_text = null, armor_penetration, penetrated_text, damage, blade_dulling, peeldivisor, intdamfactor)
+	var/armor = getarmor(def_zone, attack_flag, damage, armor_penetration, blade_dulling, peeldivisor, intdamfactor)
 
 	//the if "armor" check is because this is used for everything on /living, including humans
 	if(armor > 0 && armor_penetration)
@@ -22,7 +22,7 @@
 	return armor
 
 
-/mob/living/proc/getarmor(def_zone, type, damage, armor_penetration, blade_dulling)
+/mob/living/proc/getarmor(def_zone, type, damage, armor_penetration, blade_dulling, peeldivisor, intdamfactor)
 	return 0
 
 //this returns the mob's protection against eye damage (number between -1 and 2) from bright lights
@@ -97,10 +97,8 @@
 	return simple_woundcritroll(P.woundclass, P.damage, null, def_zone, crit_message = TRUE)
 
 /mob/living/proc/check_projectile_embed(obj/projectile/P, def_zone)
-	if(!prob(P.embedchance) || !P.dropped)
-		return FALSE
-	simple_add_embedded_object(P.dropped, crit_message = TRUE)
-	return TRUE
+	// Disable embeds on simples, allowing it to override on complex.
+	return FALSE
 
 /obj/item/proc/get_volume_by_throwforce_and_or_w_class()
 	if(throwforce && w_class)
@@ -110,16 +108,17 @@
 	else
 		return 0
 
-/mob/living/hitby(atom/movable/AM, skipcatch, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum, damage_type = "blunt")
+/mob/living/hitby(atom/movable/AM, skipcatch, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum, damage_flag = "blunt")
 	if(istype(AM, /obj/item))
 		var/obj/item/I = AM
-		var/zone = ran_zone(BODY_ZONE_CHEST, 65)//Hits a random part of the body, geared towards the chest
+		// Hit the selected zone, or else a random zone centered on the chest
+		var/zone = throwingdatum?.target_zone || ran_zone(BODY_ZONE_CHEST, 65)
 		SEND_SIGNAL(I, COMSIG_MOVABLE_IMPACT_ZONE, src, zone)
 		if(!blocked)
-			var/armor = run_armor_check(zone, damage_type, "", "",I.armor_penetration, damage = I.throwforce)
+			var/armor = run_armor_check(zone, damage_flag, "", "",I.armor_penetration, damage = I.throwforce)
 			next_attack_msg.Cut()
 			var/nodmg = FALSE
-			if(!apply_damage(I.throwforce, damage_type, zone, armor))
+			if(!apply_damage(I.throwforce, I.damtype, zone, armor))
 				nodmg = TRUE
 				next_attack_msg += " <span class='warning'>Armor stops the damage.</span>"
 			if(!nodmg)

@@ -60,11 +60,10 @@
 
 ///Would this zone be above the neck
 /proc/above_neck(zone)
-	var/list/zones = list(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_PRECISE_R_EYE, BODY_ZONE_PRECISE_L_EYE)
-	if(zones.Find(zone))
-		return 1
-	else
-		return 0
+	switch(zone)
+		if(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_PRECISE_R_EYE, BODY_ZONE_PRECISE_L_EYE)
+			return TRUE
+	return FALSE
 /**
   * Convert random parts of a passed in message to stars
   *
@@ -529,6 +528,9 @@
 			mmb_intent.movement_interrupt = ranged_ability.movement_interrupt
 			mmb_intent.charging_slowdown = ranged_ability.charging_slowdown
 			mmb_intent.chargedloop = ranged_ability.chargedloop
+			mmb_intent.glow_intensity = ranged_ability.glow_intensity
+			mmb_intent.glow_color = ranged_ability.glow_color
+			mmb_intent.mob_charge_effect = ranged_ability.mob_charge_effect
 			mmb_intent.update_chargeloop()
 	
 	if(hud_used)		

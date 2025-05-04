@@ -1,7 +1,7 @@
 ///////////OFFHAND///////////////
 /obj/item/grabbing
 	name = "pulling"
-	icon_state = "pulling"
+	icon_state = "grabbing"
 	icon = 'icons/mob/roguehudgrabs.dmi'
 	w_class = WEIGHT_CLASS_HUGE
 	possible_item_intents = list(/datum/intent/grab/upgrade)
@@ -87,6 +87,17 @@
 	if(ismob(grabbed))
 		var/mob/M = grabbed
 		M.grabbedby -= src
+		if(iscarbon(M) && sublimb_grabbed)
+			var/mob/living/carbon/carbonmob = M
+			var/obj/item/bodypart/part = carbonmob.get_bodypart(sublimb_grabbed)
+
+			// Edge case: if a weapon becomes embedded in a mob, our "grab" will be destroyed...
+			// In this case, grabbed will be the mob, and sublimb_grabbed will be the weapon, rather than a bodypart
+			// This means we should skip any further processing for the bodypart
+			if(part)
+				part.grabbedby -= src
+				part = null
+				sublimb_grabbed = null
 	if(isturf(grabbed))
 		var/turf/T = grabbed
 		T.grabbedby -= src
@@ -463,6 +474,7 @@
 	if(HAS_TRAIT(user, TRAIT_STRONGBITE))
 		damage = damage*2
 	C.next_attack_msg.Cut()
+	user.do_attack_animation(C, "bite")
 	if(C.apply_damage(damage, BRUTE, limb_grabbed, armor_block))
 		playsound(C.loc, "smallslash", 100, FALSE, -1)
 		var/datum/wound/caused_wound = limb_grabbed.bodypart_attacked_by(BCLASS_BITE, damage, user, sublimb_grabbed, crit_message = TRUE)
@@ -574,8 +586,9 @@
 				to_chat(user, "<span class='notice'>A strange, sweet taste tickles my throat.</span>")
 				addtimer(CALLBACK(user, .mob/living/carbon/human/proc/vampire_infect), 1 MINUTES) // I'll use this for succession later.
 			else */
-			to_chat(user, "<span class='warning'>I'm going to puke...</span>")
-			addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon, vomit), 0, TRUE), rand(8 SECONDS, 15 SECONDS))
+			if(!HAS_TRAIT(user, TRAIT_HORDE))
+				to_chat(user, "<span class='warning'>I'm going to puke...</span>")
+				addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon, vomit), 0, TRUE), rand(8 SECONDS, 15 SECONDS))
 	else
 		if(user.mind)
 			if(user.mind.has_antag_datum(/datum/antagonist/vampirelord))
@@ -586,8 +599,10 @@
 				else
 					VDrinker.handle_vitae(300)
 
-	C.blood_volume = max(C.blood_volume-5, 0)
+	C.blood_volume = max(C.blood_volume-15, 0)
 	C.handle_blood()
+	if(HAS_TRAIT(user, TRAIT_HORDE))
+		user.adjust_hydration(8)
 
 	playsound(user.loc, 'sound/misc/drink_blood.ogg', 100, FALSE, -4)
 

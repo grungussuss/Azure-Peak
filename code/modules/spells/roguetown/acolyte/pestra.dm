@@ -12,7 +12,7 @@
 	invocation_type = "none"
 	associated_skill = /datum/skill/magic/holy
 	antimagic_allowed = TRUE
-	charge_max = 5 SECONDS //very stupidly simple spell
+	recharge_time = 5 SECONDS //very stupidly simple spell
 	miracle = TRUE
 	devotion_cost = 0 //come on, this is very basic
 
@@ -68,7 +68,7 @@
 	invocation_type = "none"
 	associated_skill = /datum/skill/magic/holy
 	antimagic_allowed = TRUE
-	charge_max = 60 SECONDS //attaching a limb is pretty intense
+	recharge_time = 60 SECONDS //attaching a limb is pretty intense
 	miracle = TRUE
 	devotion_cost = 20
 
@@ -168,11 +168,15 @@
 	sound = 'sound/magic/revive.ogg'
 	associated_skill = /datum/skill/magic/holy
 	antimagic_allowed = TRUE
-	charge_max = 2 MINUTES
+	recharge_time = 2 MINUTES
 	miracle = TRUE
 	devotion_cost = 30
 	/// Amount of PQ gained for curing zombos
 	var/unzombification_pq = PQ_GAIN_UNZOMBIFY
+	var/is_lethal = TRUE
+
+/obj/effect/proc_holder/spell/invoked/cure_rot/priest
+	is_lethal = FALSE
 
 /obj/effect/proc_holder/spell/invoked/cure_rot/cast(list/targets, mob/living/user)
 	if(isliving(targets[1]))
@@ -187,8 +191,10 @@
 
 		if(remove_rot(target = target, user = user, method = "prayer",
 			success_message = "The rot leaves [target]'s body!",
-			fail_message = "Nothing happens."))
+			fail_message = "Nothing happens.", lethal = is_lethal))
 			target.visible_message(span_notice("The rot leaves [target]'s body!"), span_green("I feel the rot leave my body!"))
+			target.remove_status_effect(/datum/status_effect/debuff/rotted_zombie)	//Removes the rotted-zombie debuff if they have it.
+			target.apply_status_effect(/datum/status_effect/debuff/rotted)	//Perma debuff, needs cure
 			return TRUE
 		else //Attempt failed, no rot
 			target.visible_message(span_warning("The rot fails to leave [target]'s body!"), span_warning("I feel no different..."))

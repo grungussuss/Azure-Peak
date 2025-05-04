@@ -12,7 +12,7 @@
 	speak_chance = 1
 	turns_per_move = 5
 	see_in_dark = 6
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 4)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 4)
 	response_help_continuous = "pets"
 	response_help_simple = "pet"
 	response_disarm_continuous = "gently pushes aside"
@@ -96,7 +96,7 @@
 	speak_chance = 1
 	turns_per_move = 5
 	see_in_dark = 6
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 6)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat = 6)
 	response_help_continuous = "pets"
 	response_help_simple = "pet"
 	response_disarm_continuous = "gently pushes aside"
@@ -247,7 +247,7 @@
 	density = FALSE
 	speak_chance = 2
 	turns_per_move = 3
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 1)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat = 1)
 	var/egg_type = /obj/item/reagent_containers/food/snacks/egg
 	food_type = list(/obj/item/reagent_containers/food/snacks/grown/wheat, /obj/item/reagent_containers/food/snacks/grown/oat)
 	response_help_continuous = "pets"
@@ -342,7 +342,6 @@
 	reagents.add_reagent(/datum/reagent/consumable/milk, 1)
 
 /obj/item/udder/proc/milkAnimal(obj/O, mob/user)
-	var/mob/living/living = user
 	var/obj/item/reagent_containers/glass/G = O
 	if(in_use)
 		return
@@ -354,12 +353,11 @@
 		return
 	beingmilked()
 	playsound(O, pick('modular/Creechers/sound/milking1.ogg', 'modular/Creechers/sound/milking2.ogg'), 100, TRUE, -1)
-
-	if(do_after(user, (20  - (living.mind.get_skill_level(/datum/skill/labor/farming) * 3 )), target = src))//this should slightly reduce milk time.
+	if(do_after(user, 20, target = src))
 		reagents.trans_to(O, rand(5,10))
 		user.visible_message("<span class='notice'>[user] milks [src] using \the [O].</span>", "<span class='notice'>I milk [src] using \the [O].</span>")
 
-/obj/item/udder/proc/beingmilked(user)
+/obj/item/udder/proc/beingmilked()
 	in_use = TRUE
 	sleep(20)
 	in_use = FALSE

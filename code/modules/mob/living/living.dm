@@ -1,3 +1,7 @@
+/mob/living
+	//used by the basic ai controller /datum/ai_behavior/basic_melee_attack to determine how fast a mob can attack
+	var/melee_cooldown = CLICK_CD_MELEE
+
 /mob/living/Initialize()
 	. = ..()
 	update_a_intents()
@@ -41,6 +45,9 @@
 		return
 	if(HAS_TRAIT(src, TRAIT_NOFALLDAMAGE1))
 		if(levels <= 2)
+			Immobilize(10)
+			if(m_intent == MOVE_INTENT_RUN)
+				toggle_rogmove_intent(MOVE_INTENT_WALK)
 			return
 	var/points
 	for(var/i in 2 to levels)
@@ -300,6 +307,8 @@
 	if(!(src.mobility_flags & MOBILITY_STAND))
 		return TRUE
 	var/list/acceptable = list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG, BODY_ZONE_R_ARM, BODY_ZONE_CHEST, BODY_ZONE_L_ARM)
+	if(HAS_TRAIT(L, TRAIT_CIVILIZEDBARBARIAN))
+		acceptable.Add(BODY_ZONE_HEAD)
 	if( !(check_zone(L.zone_selected) in acceptable) )
 		to_chat(L, span_warning("I can't reach that."))
 		return FALSE
@@ -319,6 +328,8 @@
 		else
 			if(!CZ) //we are punching, no legs
 				acceptable = list(BODY_ZONE_HEAD, BODY_ZONE_R_ARM, BODY_ZONE_CHEST, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_STOMACH, BODY_ZONE_PRECISE_R_HAND, BODY_ZONE_PRECISE_L_HAND, BODY_ZONE_L_ARM, BODY_ZONE_PRECISE_NECK, BODY_ZONE_PRECISE_R_EYE,BODY_ZONE_PRECISE_L_EYE, BODY_ZONE_PRECISE_EARS, BODY_ZONE_PRECISE_SKULL, BODY_ZONE_PRECISE_NOSE, BODY_ZONE_PRECISE_MOUTH)
+				if(HAS_TRAIT(L, TRAIT_CIVILIZEDBARBARIAN))
+					acceptable = list(BODY_ZONE_HEAD, BODY_ZONE_R_ARM, BODY_ZONE_CHEST, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_STOMACH, BODY_ZONE_PRECISE_R_HAND, BODY_ZONE_PRECISE_L_HAND, BODY_ZONE_L_ARM, BODY_ZONE_PRECISE_NECK, BODY_ZONE_PRECISE_R_EYE,BODY_ZONE_PRECISE_L_EYE, BODY_ZONE_PRECISE_EARS, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG, BODY_ZONE_PRECISE_SKULL, BODY_ZONE_PRECISE_NOSE, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_PRECISE_R_FOOT, BODY_ZONE_PRECISE_L_FOOT)
 	else if(!(L.mobility_flags & MOBILITY_STAND) && (mobility_flags & MOBILITY_STAND)) //we are prone, victim is standing
 		if(I)
 			if(I.wlength > WLENGTH_NORMAL)
@@ -402,11 +413,11 @@
 			O.grabbed = C
 			O.grabbee = src
 			O.limb_grabbed = BP
+			BP.grabbedby += O
 			if(item_override)
 				O.sublimb_grabbed = item_override
 			else
 				O.sublimb_grabbed = used_limb
-			O.icon_state = zone_selected
 			put_in_hands(O)
 			O.update_hands(src)
 			if(HAS_TRAIT(src, TRAIT_STRONG_GRABBER) || item_override)
@@ -852,17 +863,6 @@
 	update_wallpress_slowdown()
 
 
-/mob/living/proc/update_pixelshift(turf/T, atom/newloc, direct)
-	if(!pixelshifted)
-		reset_offsets("pixel_shift")
-		return FALSE
-	pixelshifted = FALSE
-	pixelshift_x = 0
-	pixelshift_y = 0
-	pixelshift_layer = 0
-	layer = 4
-	reset_offsets("pixel_shift")
-
 /mob/living/Move(atom/newloc, direct, glide_size_override)
 
 	var/old_direction = dir
@@ -874,9 +874,6 @@
 
 	if(wallpressed)
 		update_wallpress(T, newloc, direct)
-
-	if(pixelshifted)
-		update_pixelshift(T, newloc, direct)
 
 	if(lying)
 		if(direct & EAST)
@@ -1092,6 +1089,7 @@
 		to_chat(pulledby, span_danger("[src] breaks free of my grip!"))
 		log_combat(pulledby, src, "broke grab")
 		pulledby.changeNext_move(CLICK_CD_GRABBING)
+		playsound(src.loc, 'sound/combat/grabbreak.ogg', 50, TRUE, -1)
 		pulledby.stop_pulling()
 		return FALSE
 	else
@@ -1101,6 +1099,7 @@
 //			shitte = " ([resist_chance]%)"
 		visible_message(span_warning("[src] struggles to break free from [pulledby]'s grip!"), \
 						span_warning("I struggle against [pulledby]'s grip![shitte]"), null, null, pulledby)
+		playsound(src.loc, 'sound/combat/grabstruggle.ogg', 50, TRUE, -1)
 		to_chat(pulledby, span_warning("[src] struggles against my grip!"))
 
 		return TRUE
@@ -1117,6 +1116,7 @@
 						if(G.sublimb_grabbed == BODY_ZONE_PRECISE_NOSE)
 							visible_message(span_warning("[src] struggles to break free from [pulledby]'s grip!"), \
 											span_warning("I struggle against [pulledby]'s grip!"), null, null, pulledby)
+							playsound(src.loc, 'sound/combat/grabstruggle.ogg', 50, TRUE, -1)
 							to_chat(pulledby, span_warning("[src] struggles against my grip!"))
 							return FALSE
 	return ..()
@@ -1565,7 +1565,7 @@
 		if(!lying_prev)
 			fall(!canstand_involuntary)
 		layer = LYING_MOB_LAYER //so mob lying always appear behind standing mobs
-		if (pixelshifted)
+		if (is_shifted)
 			layer = 3.99 + pixelshift_layer //So mobs can pixelshift layers while lying down
 	else
 		if(layer == LYING_MOB_LAYER)
@@ -1765,18 +1765,19 @@
 		return
 	if(!can_look_up())
 		return
-	changeNext_move(CLICK_CD_EXHAUSTED)
+	changeNext_move(HAS_TRAIT(src, TRAIT_SLEUTH) ? CLICK_CD_SLEUTH : CLICK_CD_TRACKING)
 	if(m_intent != MOVE_INTENT_SNEAK)
 		visible_message(span_info("[src] begins looking around."))
 	var/looktime = 50 - (STAPER * 2) - (mind?.get_skill_level(/datum/skill/misc/tracking) * 5)
 	looktime = clamp(looktime, 7, 50)
-	if(do_after(src, looktime, target = src))
+	if(HAS_TRAIT(src, TRAIT_SLEUTH) ? move_after(src, looktime, target = src) : do_after(src, looktime, target = src))
 		for(var/mob/living/M in view(7,src))
+			var/marked = FALSE
 			if(M == src)
 				continue
 			if(see_invisible < M.invisibility)
 				continue
-			var/probby = (3 * STAPER) + (mind?.get_skill_level(/datum/skill/misc/tracking)) * 5
+			var/probby = (2 * STAPER) + (mind?.get_skill_level(/datum/skill/misc/tracking)) * 5
 			if(M.mob_timers[MT_INVISIBILITY] > world.time) // Check if the mob is affected by the invisibility spell
 				if(mind?.get_skill_level(/datum/skill/misc/tracking) <= SKILL_LEVEL_EXPERT)	//Master or Legendary from this point
 					continue
@@ -1785,17 +1786,17 @@
 				var/target_holy = M.mind?.get_skill_level(/datum/skill/magic/holy)
 				var/target_arcyne = M.mind?.get_skill_level(/datum/skill/magic/arcane)
 				var/chosen_skill = max(target_sneak, target_holy, target_arcyne)
-				probby -= chosen_skill * 10
+				probby -= chosen_skill * 5
 				if(M.STAPER > 10)
 					probby -= (M.STAPER) / 2
 			probby = (max(probby, 5))
 			if(prob(probby))
-				found_ping(get_turf(M), client, "hidden")
-				M.mob_timers[MT_INVISIBILITY] = world.time
-				M.update_sneak_invis()
-				to_chat(M, span_danger("[src] sees me! I'm found!"))
-				if(M.m_intent == MOVE_INTENT_SNEAK)
+				marked = TRUE
+				if(M.m_intent == MOVE_INTENT_SNEAK || M.mob_timers[MT_INVISIBILITY] > world.time)
 					emote("huh")
+					to_chat(M, span_danger("[src] sees me! I'm found!"))
+					M.update_sneak_invis()
+					M.mob_timers[MT_INVISIBILITY] = world.time
 					M.mob_timers[MT_FOUNDSNEAK] = world.time
 			else
 				if(M.m_intent == MOVE_INTENT_SNEAK || M.mob_timers[MT_INVISIBILITY] > world.time)
@@ -1804,7 +1805,14 @@
 					else
 						to_chat(M, span_warning("[src] didn't find me."))
 				else
-					found_ping(get_turf(M), client, "hidden")
+					marked = TRUE
+			if(marked)
+				if(ishuman(src))
+					var/mob/living/carbon/human/H = src
+					if(H.current_mark == M && HAS_TRAIT(H, TRAIT_SLEUTH))
+						found_ping(get_turf(M), client, "trap")
+					else
+						found_ping(get_turf(M), client, "hidden")
 
 		for(var/obj/O in view(7,src))
 			if(istype(O, /obj/item/restraints/legcuffs/beartrap))

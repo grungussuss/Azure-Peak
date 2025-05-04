@@ -8,6 +8,7 @@
 	if((resistance_flags & INDESTRUCTIBLE) || !max_integrity)
 		return
 	damage_amount = run_obj_armor(damage_amount, damage_type, damage_flag, attack_dir, armor_penetration)
+	SEND_SIGNAL(src, COMSIG_OBJ_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
 	testing("damamount [damage_amount]")
 	if(damage_amount < DAMAGE_PRECISION)
 		return
@@ -59,10 +60,10 @@
 		if(BURN)
 			playsound(src.loc, "burn", 100, FALSE, -1)
 
-/obj/hitby(atom/movable/AM, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum, damage_type = "blunt")
+/obj/hitby(atom/movable/AM, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum, damage_flag = "blunt")
 	..()
 	if(AM.throwforce > 5)
-		take_damage(AM.throwforce*0.1, BRUTE, damage_type, 1, get_dir(src, AM))
+		take_damage(AM.throwforce*0.1, BRUTE, damage_flag, 1, get_dir(src, AM))
 
 /obj/ex_act(severity, target, epicenter, devastation_range, heavy_impact_range, light_impact_range, flame_range)
 	if(resistance_flags & INDESTRUCTIBLE)
@@ -97,6 +98,7 @@
 	visible_message(span_danger("[src] is hit by \a [P]!"), null, null, COMBAT_MESSAGE_RANGE)
 	if(!QDELETED(src)) //Bullet on_hit effect might have already destroyed this object
 		take_damage(P.damage, P.damage_type, P.flag, 0, turn(P.dir, 180), P.armor_penetration)
+	P.handle_drop() //AZURE PEAK: Make sure reusable projectiles don't disappear on hit
 
 /obj/proc/attack_generic(mob/user, damage_amount = 0, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, armor_penetration = 0) //used by attack_alien, attack_animal, and attack_slime
 	user.do_attack_animation(src)
@@ -224,13 +226,20 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 				new I (get_turf(src))
 	qdel(src)
 
-///called after the obj takes damage and integrity is below integrity_failure level
+/// Called after the obj takes damage and integrity is below integrity_failure level
 /obj/proc/obj_break(damage_flag)
+	if (obj_broken)
+		return
 	obj_broken = TRUE
 	if(break_sound)
 		playsound(get_turf(src), break_sound, 80, TRUE)
 	if(break_message)
 		visible_message(break_message)
+
+/// Called after obj is repaired (needle/hammer for items)
+/obj/proc/obj_fix(mob/user)
+	obj_broken = FALSE
+	obj_integrity = max_integrity
 
 ///what happens when the obj's integrity reaches zero.
 /obj/proc/obj_destruction(damage_flag)

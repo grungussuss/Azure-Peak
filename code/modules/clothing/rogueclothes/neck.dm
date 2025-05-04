@@ -5,6 +5,21 @@
 	mob_overlay_icon = 'icons/roguetown/clothing/onmob/neck.dmi'
 	bloody_icon_state = "bodyblood"
 	experimental_inhand = FALSE
+	alternate_worn_layer = NECK_LAYER
+	var/overarmor
+
+/obj/item/clothing/neck/roguetown/MiddleClick(mob/user, params)
+	. = ..()
+	overarmor = !overarmor
+	to_chat(user, span_info("I [overarmor ? "wear \the [src] over my armor" : "wear \the [src] under my armor"]."))
+	if(overarmor)
+		alternate_worn_layer = NECK_LAYER
+	else
+		alternate_worn_layer = UNDER_ARMOR_LAYER
+	user.update_inv_neck()
+	user.update_inv_cloak()
+	user.update_inv_armor()
+	user.update_inv_shirt()
 
 /obj/item/clothing/neck/roguetown/coif
 	name = "coif"
@@ -94,6 +109,37 @@
 					H.update_inv_neck()
 					H.update_inv_head()
 
+/obj/item/clothing/neck/roguetown/chaincoif/chainmantle
+	name = "chain mantle"
+	desc = "A more durable, thicker, piece of chain neck protection, though, this one only covers the neck and mouth when pulled up."
+	icon_state = "chainmantle"
+	max_integrity = 300
+	armor = list("blunt" = 90, "slash" = 100, "stab" = 80, "piercing" = 50, "fire" = 0, "acid" = 0)
+	body_parts_covered = NECK|MOUTH
+	slot_flags = ITEM_SLOT_NECK
+	flags_inv = HIDEFACE|HIDEFACIALHAIR|HIDESNOUT
+
+/obj/item/clothing/neck/roguetown/chaincoif/chainmantle/AdjustClothes(mob/user)
+	if(loc == user)
+		if(adjustable == CAN_CADJUST)
+			adjustable = CADJUSTED
+			if(toggle_icon_state)
+				icon_state = "[initial(icon_state)]_t"
+			flags_inv = null
+			body_parts_covered = NECK
+			if(ishuman(user))
+				var/mob/living/carbon/H = user
+				H.update_inv_neck()
+				H.update_inv_head()
+		else if(adjustable == CADJUSTED)
+			ResetAdjust(user)
+			flags_inv = HIDESNOUT|HIDEFACIALHAIR|HIDEFACE
+			if(user)
+				if(ishuman(user))
+					var/mob/living/carbon/H = user
+					H.update_inv_neck()
+
+
 /obj/item/clothing/neck/roguetown/chaincoif/iron
 	name = "iron chain coif"
 	icon_state = "ichaincoif"
@@ -161,6 +207,7 @@
 	anvilrepair = /datum/skill/craft/armorsmithing
 	max_integrity = 150
 	resistance_flags = FIRE_PROOF
+	body_parts_inherent = NECK
 	slot_flags = ITEM_SLOT_NECK
 	body_parts_covered = NECK
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST)
@@ -173,6 +220,7 @@
 	smeltresult = /obj/item/ingot/iron
 	anvilrepair = /datum/skill/craft/armorsmithing
 	max_integrity = 150
+	body_parts_inherent = NECK
 	resistance_flags = FIRE_PROOF
 	slot_flags = ITEM_SLOT_NECK
 	body_parts_covered = NECK

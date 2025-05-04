@@ -46,6 +46,7 @@
 	attack_same = 1
 	retreat_health = 0.3
 	aggressive = 1
+	rot_type = null
 
 	remains_type = /obj/effect/decal/remains/bigrat
 	eat_forever = TRUE
@@ -54,7 +55,7 @@
 	AIStatus = AI_OFF
 	can_have_ai = FALSE
 	ai_controller = /datum/ai_controller/big_rat
-
+	melee_cooldown = RAT_ATTACK_SPEED
 	stat_attack = UNCONSCIOUS
 
 /obj/effect/decal/remains/bigrat

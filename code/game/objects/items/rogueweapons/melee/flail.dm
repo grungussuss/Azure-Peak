@@ -36,7 +36,7 @@
 	blade_class = BCLASS_BLUNT
 	attack_verb = list("strikes", "hits")
 	hitsound = list('sound/combat/hits/blunt/flailhit.ogg')
-	chargetime = 5
+	chargetime = 0
 	recovery = 15
 	penfactor = 5
 	reach = 2
@@ -59,9 +59,15 @@
 	hitsound = list('sound/combat/hits/blunt/flailhit.ogg')
 	item_d_type = "blunt"
 
+/datum/intent/flail/strike/smash/militia
+	penfactor = 50
+
+/datum/intent/flail/strike/smash/golgotha
+	hitsound = list('sound/items/beartrap2.ogg')
+
 /datum/intent/flail/strike/smashrange
 	name = "ranged smash"
-	chargetime = 25
+	chargetime = 10
 	chargedrain = 2
 	no_early_release = TRUE
 	penfactor = 50
@@ -93,11 +99,19 @@
 	smeltresult = /obj/item/ingot/steel
 	minstr = 5
 
-/obj/item/rogueweapon/flail/necraflail
+/obj/item/rogueweapon/flail/sflail/necraflail
 	name = "swift journey"
 	desc = "The striking head is full of teeth, rattling viciously with ever strike, with every rotation. Each set coming from one the wielder has laid to rest. Carried alongside them as a great show of respect."
 	icon_state = "necraflail"
 
+/obj/item/rogueweapon/flail/sflail/psyflail
+	name = "psydon's flail"
+	desc = "An ornate flail, plated in a ceremonial veneer of silver. Its flanged head can crumple even the toughest of darksteel-maille."
+	icon_state = "psyflail"
+
+/obj/item/rogueweapon/flail/sflail/psyflail/ComponentInitialize()
+	. = ..()							//+3 force, +50 int, +1 def, make silver
+	AddComponent(/datum/component/psyblessed, FALSE, 3, FALSE, 50, 1, TRUE)
 
 /datum/intent/whip/lash
 	name = "lash"
@@ -182,17 +196,26 @@
 
 /obj/item/rogueweapon/whip/antique/psywhip
 	name = "Daybreak"
-	desc = "I am wrath. I am silver. I am the mercy of HIM."
+	desc = "Holding the blessed silver evokes a memory of the Grand Otavan Cathedral, a testament to humenity's faith. There, upon the ceiling, was painted a scene-most-beautiful: of a robed Psydon standing before the Archdevil, parting the nite's sky with a crack from His fiery whip. Just as He had done prior, so too must you bring daelight to the darkness."
 	icon_state = "psywhip"
 	is_silver = TRUE
+
+/obj/item/rogueweapon/whip/psywhip_lesser
+	name = "psydonite whip"
+	desc = "An ornate whip, plated in a ceremonial veneer of silver. Crack the leather and watch as the apostates clammer aside."
+	icon_state = "psywhip_lesser"
+
+/obj/item/rogueweapon/whip/psywhip_lesser/ComponentInitialize()
+	. = ..()					//+3 force, +50 int, +1 def, make silver
+	AddComponent(/datum/component/psyblessed, FALSE, 3, FALSE, 50, 1, TRUE)
 
 /obj/item/rogueweapon/flail/peasantwarflail
 	force = 10
 	force_wielded = 35
 	possible_item_intents = list(/datum/intent/flail/strike)
 	gripped_intents = list(/datum/intent/flail/strikerange, /datum/intent/flail/strike/smashrange)
-	name = "peasant war flail"
-	desc = "An agricultural flail turned into a weapon of war."
+	name = "militia thresher"
+	desc = "Just like how a sling's bullet can fell a giant, so too does this great flail follow the principle of converting 'momentum' into 'plate-rupturing force'."
 	icon_state = "peasantwarflail"
 	icon = 'icons/roguetown/weapons/64.dmi'
 	pixel_y = -16
@@ -204,13 +227,14 @@
 	wlength = WLENGTH_GREAT
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = null
-	minstr = 12
-	wbalance = -2
+	minstr = 9
+	wbalance = -1
 	smeltresult = /obj/item/ingot/iron
 	associated_skill = /datum/skill/combat/polearms
-	dropshrink = 0.6
+	anvilrepair = /datum/skill/craft/carpentry
+	dropshrink = 0.9
 	blade_dulling = DULLING_BASHCHOP
-	wdefense = 1
+	wdefense = 4
 	resistance_flags = FLAMMABLE
 
 /obj/item/rogueweapon/flail/peasantwarflail/getonmobprop(tag)
@@ -221,3 +245,12 @@
 				return list("shrink" = 0.6,"sx" = -7,"sy" = 2,"nx" = 7,"ny" = 3,"wx" = -2,"wy" = 1,"ex" = 1,"ey" = 1,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -38,"sturn" = 37,"wturn" = 30,"eturn" = -30,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
 			if("wielded")
 				return list("shrink" = 0.6,"sx" = 5,"sy" = -3,"nx" = -5,"ny" = -2,"wx" = -5,"wy" = -1,"ex" = 3,"ey" = -2,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 7,"sturn" = -7,"wturn" = 16,"eturn" = -22,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0)
+
+/obj/item/rogueweapon/flail/militia
+	name = "militia flail"
+	desc = "In another lyfe, this humble thresher was used to pound stalks into grain. Under a militiaman's grasp, however, it has found a new purpose: to humble overconfident bandits with crippling blows."
+	icon_state = "milflail"
+	possible_item_intents = list(/datum/intent/flail/strike, /datum/intent/flail/strike/smash/militia)
+	force = 27
+	wdefense = 3
+	wbalance = -1

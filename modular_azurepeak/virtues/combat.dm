@@ -1,21 +1,19 @@
 /datum/virtue/combat/magical_potential
 	name = "Arcyne Potential"
-	desc = "I grasped the basics of arcyne magic at an early age, and have been able to prestidigitate for as long as I can remember."
-	custom_text = "Combat classes receive a weaker version of this virtue -- they get fewer spellpoints."
+	desc = "I am talented in the Arcyne arts, expanding my capacity for magic. Its effects depends on what training I chose to focus on at a later age."
+	custom_text = "Classes that has a combat trait (Medium / Heavy Armor Training, Dodge Expert or Critical Resistance) get only prestidigitation. Everyone else get +2 spellpoints and T1 Arcyne Potential if they don't have any Arcyne."
 	added_skills = list(list(/datum/skill/magic/arcane, 1, 6))
 
 /datum/virtue/combat/magical_potential/apply_to_human(mob/living/carbon/human/recipient)
 	if (!recipient.mind?.get_skill_level(/datum/skill/magic/arcane)) // we can do this because apply_to is always called first
-		recipient.mind?.adjust_spellpoints(-4) // Limits skill gain through for non-initial arcynes
 		if (!recipient.mind?.has_spell(/obj/effect/proc_holder/spell/targeted/touch/prestidigitation))
 			recipient.mind?.AddSpell(new /obj/effect/proc_holder/spell/targeted/touch/prestidigitation)
+		if (!HAS_TRAIT(recipient, TRAIT_MEDIUMARMOR) && !HAS_TRAIT(recipient, TRAIT_HEAVYARMOR) && !HAS_TRAIT(recipient, TRAIT_DODGEEXPERT) && !HAS_TRAIT(recipient, TRAIT_CRITICAL_RESISTANCE))
+			ADD_TRAIT(recipient, TRAIT_ARCYNE_T1, TRAIT_GENERIC)
+			recipient.mind?.adjust_spellpoints(2)
 	else
-		if (!HAS_TRAIT(recipient, TRAIT_MEDIUMARMOR) && !HAS_TRAIT(recipient, TRAIT_HEAVYARMOR) && !HAS_TRAIT(recipient, TRAIT_DODGEEXPERT))
-			recipient.mind?.adjust_spellpoints(1) // 1 extra spellpoint if you're already arcane
-		else
-			recipient.mind?.adjust_spellpoints(2) // This lessons the -6 that applies to martial classes by default (currently only pontifex at time of change).
-			to_chat(recipient, span_notice("My virtue lessens the limitations of my magical reach."))
-
+		recipient.mind?.adjust_spellpoints(2) // 2 extra spellpoints since you don't get any spell point from the skill anymore
+	
 /datum/virtue/combat/devotee
 	name = "Devotee"
 	desc = "Though not officially of the Church, my relationship with my chosen Patron is strong enough to grant me the most minor of their blessings. I've also kept a psycross of my deity."
@@ -78,6 +76,8 @@
 			recipient.mind?.special_items["Ravox Psycross"] =/obj/item/clothing/neck/roguetown/psicross/ravox
 		if(/datum/patron/divine/malum)
 			recipient.mind?.special_items["Malum Psycross"] = /obj/item/clothing/neck/roguetown/psicross/malum
+		if(/datum/patron/old_god)
+			recipient.mind?.special_items["Psydon Psycross"] = /obj/item/clothing/neck/roguetown/psicross
 
 /datum/virtue/combat/duelist
 	name = "Duelist Apprentice"
@@ -90,12 +90,10 @@
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/swords, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/swords, 1, 3))
-		handle_skills(recipient)
 	if(recipient.mind?.get_skill_level(/datum/skill/combat/knives) < SKILL_LEVEL_APPRENTICE)
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/knives, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else	
 		added_skills = list(list(/datum/skill/combat/knives, 1, 3))
-		handle_skills(recipient)
 
 /datum/virtue/combat/executioner
 	name = "Executioner Apprentice"
@@ -108,12 +106,10 @@
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/whipsflails, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/whipsflails, 1, 3))
-		handle_skills(recipient)
 	if(recipient.mind?.get_skill_level(/datum/skill/combat/axes) < SKILL_LEVEL_APPRENTICE)
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/axes, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/axes, 1, 3))
-		handle_skills(recipient)
 
 /datum/virtue/combat/militia
 	name = "Militiaman Apprentice"
@@ -126,12 +122,10 @@
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/polearms, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/polearms, 1, 3))
-		handle_skills(recipient)
 	if(recipient.mind?.get_skill_level(/datum/skill/combat/maces) < SKILL_LEVEL_APPRENTICE)
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/maces, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/maces, 1, 3))
-		handle_skills(recipient)
 
 /datum/virtue/combat/brawler
 	name = "Brawler Apprentice"
@@ -144,12 +138,10 @@
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/unarmed, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/unarmed, 1, 3))
-		handle_skills(recipient)
 	if(recipient.mind?.get_skill_level(/datum/skill/combat/wrestling) < SKILL_LEVEL_APPRENTICE)
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/wrestling, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/wrestling, 1, 3))
-		handle_skills(recipient)
 
 
 /datum/virtue/combat/bowman
@@ -165,7 +157,6 @@
 		recipient.mind?.adjust_skillrank_up_to(/datum/skill/combat/bows, SKILL_LEVEL_APPRENTICE, silent = TRUE)
 	else
 		added_skills = list(list(/datum/skill/combat/bows, 1, 6))
-		handle_skills(recipient)
 /*/datum/virtue/combat/tavern_brawler
 	name = "Tavern Brawler"
 	desc = "I've never met a problem my fists couldn't solve."
@@ -200,3 +191,4 @@
 	name = "Sentinel of Wits"
 	desc = "Whether it's by having an annoying sibling that kept prodding me with a stick, or years of study and observation, I've become adept at both parrying and dodging stronger opponents, by learning their moves and studying them."
 	added_traits = list(TRAIT_SENTINELOFWITS)
+

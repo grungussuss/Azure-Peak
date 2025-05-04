@@ -1,8 +1,7 @@
 /datum/crafting_recipe/roguetown/alchemy
 	req_table = FALSE
-	tools = list(/obj/item/reagent_containers/glass/mortar, /obj/item/pestle)
 	verbage_simple = "mix"
-	skillcraft = /datum/skill/misc/alchemy
+	skillcraft = /datum/skill/craft/alchemy
 	subtype_reqs = TRUE
 	structurecraft = /obj/structure/fluff/alch
 
@@ -56,7 +55,7 @@
 /datum/crafting_recipe/roguetown/alchemy/quicksilver
 	name = "quicksilver"
 	result = list(/obj/item/quicksilver = 1)
-	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/fyritius/bloodied = 1, /datum/reagent/water/blessed = 45, /obj/item/natural/cloth = 1, /obj/item/ingot/silver = 1)
+	reqs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/fyritius/bloodied = 1, /datum/reagent/water/blessed = 45, /obj/item/natural/cloth = 1, /obj/item/alch/silverdust = 1)
 	craftdiff = 4
 
 /// bottle craft
@@ -181,10 +180,9 @@
 	craftdiff = 6
 	verbage_simple = "transmute"
 
-/datum/crafting_recipe/roguetown/alchemy/alchmort
-	name = "alchemical mortar"
-	tools = list()
-	result = list(/obj/item/mortar = 1)
-	reqs = list(/obj/item/natural/stone = 3, /obj/item/rogueore/iron = 1)
-	verbage_simple = "fabricate"
-	verbage = "fabricates"
+//Hard to craft but feasable, will give ONE vial but that has 10 units so, enough to cure 2 people if they ration it.
+/datum/crafting_recipe/roguetown/alchemy/curerot
+	name = "rot cure potion"
+	result = list(/obj/item/reagent_containers/glass/bottle/rogue/rotcure = 1)
+	reqs = list(/obj/item/reagent_containers/glass/bottle = 1, /obj/item/reagent_containers/food/snacks/grown/rogue/fyritius = 1, /obj/item/ingot/gold = 1, /obj/item/alch/viscera = 2)
+	craftdiff = 5	//Master-level

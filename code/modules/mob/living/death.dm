@@ -58,7 +58,7 @@
 		new /obj/item/ash(loc)
 
 
-/mob/living/death(gibbed)
+/mob/living/death(gibbed, nocutscene = FALSE)
 	var/was_dead_before = stat == DEAD
 	stat = DEAD
 	unset_machine()
@@ -79,7 +79,8 @@
 	SSdroning.kill_rain(src.client)
 	SSdroning.kill_loop(src.client)
 	SSdroning.kill_droning(src.client)
-	src.playsound_local(src, 'sound/misc/deth.ogg', 100)
+	if(!nocutscene)
+		src.playsound_local(src, 'sound/misc/deth.ogg', 100)
 
 	set_drugginess(0)
 	set_disgust(0)
@@ -97,14 +98,15 @@
 	SEND_SIGNAL(src, COMSIG_LIVING_DEATH, gibbed) 
 	if(client)
 		client.move_delay = initial(client.move_delay)
-		var/atom/movable/screen/gameover/hog/H = new()
-		H.layer = SPLASHSCREEN_LAYER+0.1
-		client.screen += H
+		if(!nocutscene)
+			var/atom/movable/screen/gameover/hog/H = new()
+			H.layer = SPLASHSCREEN_LAYER+0.1
+			client.screen += H
+			H.Fade()
+			addtimer(CALLBACK(H, TYPE_PROC_REF(/atom/movable/screen/gameover, Fade), TRUE), 100)
 //		flick("gameover",H)
 //		addtimer(CALLBACK(H, TYPE_PROC_REF(/atom/movable/screen/gameover, Fade)), 29)
-		H.Fade()
 		mob_timers["lastdied"] = world.time
-		addtimer(CALLBACK(H, TYPE_PROC_REF(/atom/movable/screen/gameover, Fade), TRUE), 100)
 //		addtimer(CALLBACK(client, PROC_REF(ghostize), 1, src), 150)
 		add_client_colour(/datum/client_colour/monochrome)
 		client.verbs.Add(GLOB.ghost_verbs)
@@ -121,7 +123,7 @@
 	if(!gibbed && rot_type)
 		LoadComponent(rot_type)
 
-	set_typing_indicator(FALSE)
+	clear_typing_indicator()
 
 	// AZURE EDIT BEGIN: necra acolyte/priest deathsight trait
 	// this was a player that just died, so do the honors
