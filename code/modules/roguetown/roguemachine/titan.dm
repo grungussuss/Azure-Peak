@@ -47,7 +47,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 /// Destroys the current crown with a cool message and returns a new crown.
 /obj/structure/roguemachine/titan/proc/recreate_crown()
 	if(SSroguemachine.crown)
-		var/area/crown_area = get_area(I)
+		var/area/crown_area = get_area(SSroguemachine.crown)
 		if(crown_area && istype(crown_area, /area/rogue/indoors/town/vault) && notlord) //Anti throat snipe from vault
 			say("The crown is within the vault.")
 			playsound(src, 'sound/misc/machineno.ogg', 100, FALSE, -1)
@@ -153,10 +153,6 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		set_taxes(user)
 	if(findtext(message, "change position") && perform_check(user))
 		change_position(user)
-
-/obj/structure/roguemachine/titan/Initialize()
-	. = ..()
-	become_hearing_sensitive()
 
 /obj/structure/roguemachine/titan/obj_break(damage_flag, silent)
 	..()
