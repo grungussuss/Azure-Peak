@@ -234,7 +234,8 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 
 /// Makes a decree
 /obj/structure/roguemachine/titan/proc/make_decree_titan(mob/living/carbon/human/user, message)
-	make_decree(message)
+	GLOB.lord_decrees += message
+	SScommunications.make_announcement(user, TRUE, message)
 	reset_mode()
 
 /obj/structure/roguemachine/titan/proc/make_law_titan(mob/living/carbon/human/user, message)
@@ -396,6 +397,10 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	GLOB.outlawed_players += raw_message
 	priority_announce("[raw_message] has been declared an outlaw and must be captured or slain.", "The [SSticker.rulertype] Decrees", 'sound/misc/royal_decree2.ogg', "Captain")
 	return TRUE
+
+/* 
+global procs for the convenience of baillif code (should be handled by a subsystem tbh)
+*/
 
 /proc/make_law(raw_message)
 	GLOB.laws_of_the_land += raw_message
