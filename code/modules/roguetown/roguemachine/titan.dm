@@ -47,14 +47,19 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 /// Destroys the current crown with a cool message and returns a new crown.
 /obj/structure/roguemachine/titan/proc/recreate_crown()
 	if(SSroguemachine.crown)
+		var/area/crown_area = get_area(I)
+		if(crown_area && istype(crown_area, /area/rogue/indoors/town/vault) && notlord) //Anti throat snipe from vault
+			say("The crown is within the vault.")
+			playsound(src, 'sound/misc/machineno.ogg', 100, FALSE, -1)
+			return FALSE
 		var/obj/item/clothing/head/roguetown/crown/serpcrown/old_crown = SSroguemachine.crown
 		old_crown.anti_stall()
 
 	say("The crown is summoned!")
 	playsound(src, 'sound/misc/machinetalk.ogg', 100, FALSE, -1)
 	playsound(src, 'sound/misc/hiss.ogg', 100, FALSE, -1)
-	src.visible_message(span_warning("Ashes circle around the THROAT and the crown rematerialises!"))
-	return new /obj/item/clothing/head/roguetown/crown/serpcrown(src.loc)
+	visible_message(span_warning("Ashes circle around the THROAT and the crown rematerialises!"))
+	return new /obj/item/clothing/head/roguetown/crown/serpcrown(loc)
 
 /// Destroys the current master key with a cool message and returns a new key.
 /obj/structure/roguemachine/titan/proc/recreate_key()
@@ -65,7 +70,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	say("The key is summoned!")
 	playsound(src, 'sound/misc/machinetalk.ogg', 100, FALSE, -1)
 	playsound(src, 'sound/misc/hiss.ogg', 100, FALSE, -1)
-	src.visible_message(span_warning("The key flies around the THROAT and gently falls down!"))
+	visible_message(span_warning("The key flies around the THROAT and gently falls down!"))
 
 	return new /obj/item/roguekey
 
