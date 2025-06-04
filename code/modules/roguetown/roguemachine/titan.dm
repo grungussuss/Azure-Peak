@@ -109,7 +109,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		return FALSE
 	return TRUE
 
-/// perform checks on the mob if they can do the command, use has_to_be_worthy FALSE when the mob doesn't have to be regent or ruler
+/// perform checks on the mob if they can do the command, use has_to_be_worthy FALSE when the mob doesn't have to be ruler
 /obj/structure/roguemachine/titan/proc/perform_check(mob/checked_mob, has_to_be_worthy = TRUE)
 	if(!is_valid_mob(checked_mob))
 		return FALSE
@@ -127,7 +127,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		say("All will hear your word.")
 		playsound(src, 'sound/misc/machinetalk.ogg', 100, FALSE, -1)
 		mode = MODE_MAKE_ANNOUNCEMENT
-	if(findtext(message, "make decree") && perform_check(user))
+	if(findtext(message, "make decree") && perform_check(user, FALSE))
 		say("Speak and they will obey.")
 		playsound(src, 'sound/misc/machinetalk.ogg', 100, FALSE, -1)
 		mode = MODE_MAKE_DECREE
@@ -146,7 +146,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	if(findtext(message, "summon key") && perform_check(user, FALSE))
 		summon_key(user)
 	if(findtext(message, "remove law") && perform_check(user))
-		remove_law(message)
+		remove_law_titan(message)
 	if(findtext(message, "purge laws") && perform_check(user))
 		purge_laws()
 	if(findtext(message, "set taxes") && perform_check(user))
@@ -234,16 +234,8 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 
 /// Makes a decree
 /obj/structure/roguemachine/titan/proc/make_decree(mob/living/carbon/human/user, message)
-	var/datum/antagonist/prebel/rebel_datum = user.mind?.has_antag_datum(/datum/antagonist/prebel)
-	if(rebel_datum)
-		if(rebel_datum.rev_team?.members.len < 3)
-			to_chat(user, span_warning("I need more folk on my side to declare victory."))
-		else
-			for(var/datum/objective/prebel/obj in user.mind.get_all_objectives())
-				obj.completed = TRUE
-			if(!SSmapping.retainer.head_rebel_decree)
-				user.mind.adjust_triumphs(1)
-			SSmapping.retainer.head_rebel_decree = TRUE
+	if(!(try_make_rebel_decree(user, message)))
+
 	GLOB.lord_decrees += message
 	SScommunications.make_announcement(user, TRUE, message)
 	reset_mode()
@@ -256,7 +248,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	reset_mode()
 
 /// Removes a law
-/obj/structure/roguemachine/titan/proc/remove_law(message)
+/obj/structure/roguemachine/titan/proc/remove_law_titan(message)
 	var/clean_message = replacetext(message, "remove law", "")
 	var/law_index = text2num(clean_message) || 0
 	if(!law_index || !GLOB.laws_of_the_land[law_index])
@@ -265,41 +257,20 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		return FALSE
 	say("That law shall be gone!")
 	playsound(src, 'sound/misc/machineyes.ogg', 100, FALSE, -1)
-	var/law_text = GLOB.laws_of_the_land[law_index]
-	GLOB.laws_of_the_land -= law_text
-	priority_announce("[law_index]. [law_text]", "A LAW IS ABOLISHED", 'sound/misc/lawdeclaration.ogg', "Captain")
+	remove_law(law_index)
 	reset_mode()
 	return TRUE
 
 /// Removes all laws
-/obj/structure/roguemachine/titan/proc/purge_laws()
+/obj/structure/roguemachine/titan/proc/purge_laws_titan()
 	say("All laws shall be purged!")
 	playsound(src, 'sound/misc/machineyes.ogg', 100, FALSE, -1)
-	GLOB.laws_of_the_land = list()
-	priority_announce("All laws of the land have been purged!", "LAWS PURGED", 'sound/misc/lawspurged.ogg', "Captain")
+	purge_laws()
 
 /// Declares someone an outlaw
-/obj/structure/roguemachine/titan/proc/declare_outlaw(mob/living/carbon/human/user, message)
-	if(message in GLOB.outlawed_players)
-		GLOB.outlawed_players -= message
-		priority_announce("[message] is no longer an outlaw in Azuria.", "[user.real_name], The [user.get_role_title()] Decrees", 'sound/misc/alert.ogg', "Captain")
-		reset_mode()
-		return
-	var/found = FALSE
-	for(var/mob/living/carbon/human/to_be_outlawed in GLOB.player_list)
-		if(to_be_outlawed.real_name == message)
-			found = TRUE
-	if(!found)
-		say("That person doesn't exist!")
-		playsound(src, 'sound/misc/machineno.ogg', 100, FALSE, -1)
-		reset_mode()
-		return FALSE
-	GLOB.outlawed_players += message
-	priority_announce("[message] has been declared an outlaw and must be captured or slain.", "[user.real_name], The [user.get_role_title()] Decrees", 'sound/misc/alert.ogg', "Captain")
-	reset_mode()
-	return TRUE
-
+/obj/structure/roguemachine/titan/proc/declare_outlaw_titan(mob/living/carbon/human/user, message)
 	make_outlaw(message)
+	reset_mode()
 
 /// Sets the taxes of the realm
 /obj/structure/roguemachine/titan/proc/set_taxes(mob/living/carbon/human/user)
@@ -359,6 +330,32 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 
 	priority_announce("Henceforth, the vassal known as [victim.real_name] shall have the title of [new_pos].", "[user.real_name], The [user.get_role_title()] Decrees", 'sound/misc/alert.ogg', "Captain")
 
+/obj/structure/roguemachine/titan/proc/try_make_rebel_decree(mob/living/user)
+	. = FALSE
+	var/datum/antagonist/prebel/P = user.mind?.has_antag_datum(/datum/antagonist/prebel)
+	if(!P)
+		return
+	var/datum/game_mode/chaosmode/C = SSticker.mode
+	if(!istype(C))
+		return
+	if(!P.rev_team)
+		return
+	if(P.rev_team.members.len < 3)
+		to_chat(user, span_warning("I need more folk on my side to declare victory."))
+		return
+	var/obj/structure/roguethrone/throne = GLOB.king_throne
+	if(throne == null)
+		return
+	if(throne.rebel_leader_sit_time < REBEL_THRONE_TIME)
+		to_chat(user, span_warning("I need to get more comfortable on the throne before I declare victory."))
+		return
+	for(var/datum/objective/prebel/obj in user.mind.get_all_objectives())
+		obj.completed = TRUE
+	if(!C.headrebdecree)
+		user.mind.adjust_triumphs(1)
+	C.headrebdecree = TRUE
+	return TRUE
+
 /// Return mode to NONE
 /obj/structure/roguemachine/titan/proc/reset_mode()
 	mode = MODE_NONE
@@ -393,7 +390,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	if(raw_message in GLOB.outlawed_players)
 		GLOB.outlawed_players -= raw_message
 		priority_announce("[raw_message] is no longer an outlaw in the Azure Peak.", "The [SSticker.rulertype] Decrees", 'sound/misc/royal_decree.ogg', "Captain")
-		return FALSE
+		return TRUE
 	var/found = FALSE
 	for(var/mob/living/carbon/human/H in GLOB.player_list)
 		if(H.real_name == raw_message)
@@ -422,12 +419,6 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 /proc/purge_decrees()
 	GLOB.lord_decrees = list()
 	priority_announce("All of the land's prior decrees have been purged!", "DECREES PURGED", pick('sound/misc/royal_decree.ogg', 'sound/misc/royal_decree2.ogg'), "Captain")
-
-
-
-
-
-
 
 #undef MODE_NONE
 #undef MODE_MAKE_ANNOUNCEMENT
