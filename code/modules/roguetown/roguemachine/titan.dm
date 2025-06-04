@@ -48,7 +48,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 /obj/structure/roguemachine/titan/proc/recreate_crown()
 	if(SSroguemachine.crown)
 		var/area/crown_area = get_area(SSroguemachine.crown)
-		if(crown_area && istype(crown_area, /area/rogue/indoors/town/vault) && notlord) //Anti throat snipe from vault
+		if(crown_area && istype(crown_area, /area/rogue/indoors/town/vault)) //Anti throat snipe from vault
 			say("The crown is within the vault.")
 			playsound(src, 'sound/misc/machineno.ogg', 100, FALSE, -1)
 			return FALSE
