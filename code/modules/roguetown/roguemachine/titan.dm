@@ -127,7 +127,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		say("All will hear your word.")
 		playsound(src, 'sound/misc/machinetalk.ogg', 100, FALSE, -1)
 		mode = MODE_MAKE_ANNOUNCEMENT
-	if(findtext(message, "make decree") && perform_check(user, FALSE))
+	if(findtext(message, "make decree") && (perform_check(user) || (try_make_rebel_decree(user, message))))
 		say("Speak and they will obey.")
 		playsound(src, 'sound/misc/machinetalk.ogg', 100, FALSE, -1)
 		mode = MODE_MAKE_DECREE
@@ -224,7 +224,7 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		user.put_in_hands(new_key)
 
 /// Makes an announcement
-/obj/structure/roguemachine/titan/proc/make_announcement(mob/living/carbon/human/user, message)
+/obj/structure/roguemachine/titan/proc/make_announcement_titan(mob/living/carbon/human/user, message)
 	if(!perform_check(user, FALSE))
 		reset_mode()
 		return FALSE
@@ -233,18 +233,14 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	return TRUE
 
 /// Makes a decree
-/obj/structure/roguemachine/titan/proc/make_decree(mob/living/carbon/human/user, message)
-	if(!(try_make_rebel_decree(user, message)))
-
-	GLOB.lord_decrees += message
-	SScommunications.make_announcement(user, TRUE, message)
+/obj/structure/roguemachine/titan/proc/make_decree_titan(mob/living/carbon/human/user, message)
+	make_decree(message)
 	reset_mode()
 
-/obj/structure/roguemachine/titan/proc/make_law(mob/living/carbon/human/user, message)
+/obj/structure/roguemachine/titan/proc/make_law_titan(mob/living/carbon/human/user, message)
 	if(!SScommunications.can_announce(user))
 		return
-	GLOB.laws_of_the_land += message
-	priority_announce("[length(GLOB.laws_of_the_land)]. [message]", "A LAW IS DECLARED", 'sound/misc/lawdeclaration.ogg', "Captain")
+	make_law(message)
 	reset_mode()
 
 /// Removes a law
@@ -378,13 +374,13 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 		if(MODE_NONE)
 			recognize_command(speaker, sanitized_message)
 		if(MODE_MAKE_ANNOUNCEMENT)
-			make_announcement(speaker, raw_message)
+			make_announcement_titan(speaker, raw_message)
 		if(MODE_MAKE_LAW)
-			make_law(speaker, raw_message)
+			make_law_titan(speaker, raw_message)
 		if(MODE_DECLARE_OUTLAW)
-			declare_outlaw(speaker, raw_message)
+			declare_outlaw_titan(speaker, raw_message)
 		if(MODE_MAKE_DECREE)
-			make_decree(speaker, raw_message)
+			make_decree_titan(speaker, raw_message)
 
 /proc/make_outlaw(raw_message)
 	if(raw_message in GLOB.outlawed_players)
