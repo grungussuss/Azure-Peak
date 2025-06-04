@@ -303,6 +303,8 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 	reset_mode()
 	return TRUE
 
+	make_outlaw(message)
+
 /// Sets the taxes of the realm
 /obj/structure/roguemachine/titan/proc/set_taxes(mob/living/carbon/human/user)
 	if(!Adjacent(user))
@@ -390,6 +392,46 @@ GLOBAL_LIST_INIT(laws_of_the_land, initialize_laws_of_the_land())
 			declare_outlaw(speaker, raw_message)
 		if(MODE_MAKE_DECREE)
 			make_decree(speaker, raw_message)
+
+/proc/make_outlaw(raw_message)
+	if(raw_message in GLOB.outlawed_players)
+		GLOB.outlawed_players -= raw_message
+		priority_announce("[raw_message] is no longer an outlaw in the Azure Peak.", "The [SSticker.rulertype] Decrees", 'sound/misc/royal_decree.ogg', "Captain")
+		return FALSE
+	var/found = FALSE
+	for(var/mob/living/carbon/human/H in GLOB.player_list)
+		if(H.real_name == raw_message)
+			found = TRUE
+	if(!found)
+		return FALSE
+	GLOB.outlawed_players += raw_message
+	priority_announce("[raw_message] has been declared an outlaw and must be captured or slain.", "The [SSticker.rulertype] Decrees", 'sound/misc/royal_decree2.ogg', "Captain")
+	return TRUE
+
+/proc/make_law(raw_message)
+	GLOB.laws_of_the_land += raw_message
+	priority_announce("[length(GLOB.laws_of_the_land)]. [raw_message]", "A LAW IS DECLARED", pick('sound/misc/new_law.ogg', 'sound/misc/new_law2.ogg'), "Captain")
+
+/proc/remove_law(law_index)
+	if(!GLOB.laws_of_the_land[law_index])
+		return
+	var/law_text = GLOB.laws_of_the_land[law_index]
+	GLOB.laws_of_the_land -= law_text
+	priority_announce("[law_index]. [law_text]", "A LAW IS ABOLISHED", pick('sound/misc/new_law.ogg', 'sound/misc/new_law2.ogg'), "Captain")
+
+/proc/purge_laws()
+	GLOB.laws_of_the_land = list()
+	priority_announce("All laws of the land have been purged!", "LAWS PURGED", 'sound/misc/lawspurged.ogg', "Captain")
+
+/proc/purge_decrees()
+	GLOB.lord_decrees = list()
+	priority_announce("All of the land's prior decrees have been purged!", "DECREES PURGED", pick('sound/misc/royal_decree.ogg', 'sound/misc/royal_decree2.ogg'), "Captain")
+
+
+
+
+
+
 
 #undef MODE_NONE
 #undef MODE_MAKE_ANNOUNCEMENT
