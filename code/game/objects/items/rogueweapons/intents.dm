@@ -37,6 +37,7 @@
 	var/keep_looping = TRUE
 	var/damfactor = 1 //multiplied by weapon's force for damage
 	var/penfactor = 0 //see armor_penetration
+	var/intent_intdamage_factor = 1 // Whether the intent itself has integrity damage modifier. Used for rend.
 	var/item_d_type = "blunt" // changes the item's attack type ("blunt" - area-pressure attack, "slash" - line-pressure attack, "stab" - point-pressure attack)
 	var/charging_slowdown = 0
 	var/warnoffset = 0
@@ -51,6 +52,21 @@
 	var/glow_color = null // The color of the glow. Used for spells
 	var/mob_light = null // tracking mob_light
 	var/obj/effect/mob_charge_effect = null // The effect to be added (on top) of the mob while it is charging
+
+
+	var/list/static/bonk_animation_types = list(
+		BCLASS_BLUNT,
+		BCLASS_SMASH,
+	)
+	var/list/static/swipe_animation_types = list(
+		BCLASS_CUT,
+		BCLASS_CHOP,
+	)
+	var/list/static/thrust_animation_types = list(
+		BCLASS_STAB,
+		BCLASS_PICK,
+	)
+
 
 /datum/intent/Destroy()
 	if(chargedloop)
@@ -107,6 +123,9 @@
 			for(var/part in int.target_parts)
 				str +="|[bodyzone2readablezone(part)]|"
 			inspec += str
+	if(intent_intdamage_factor != 1)
+		var/percstr = abs(intent_intdamage_factor - 1) * 100
+		inspec += "\nThis intent deals [percstr]% [intent_intdamage_factor > 1 ? "more" : "less"] damage to integrity."
 	inspec += "<br>----------------------"
 
 	to_chat(user, "[inspec.Join()]")
@@ -159,6 +178,17 @@
 		if(0)
 			returned += list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	return returned
+
+
+/// returns the attack animation type this intent uses
+/datum/intent/proc/get_attack_animation_type()
+	if(blade_class in bonk_animation_types)
+		return ATTACK_ANIMATION_BONK
+	if(blade_class in swipe_animation_types)
+		return ATTACK_ANIMATION_SWIPE
+	if(blade_class in thrust_animation_types)
+		return ATTACK_ANIMATION_THRUST
+	return null
 
 /datum/intent/New(Mastermob, Masteritem)
 	..()
@@ -225,7 +255,7 @@
 	swingdelay = 5
 	misscost = 20
 	unarmed = TRUE
-	animname = "cut"
+	animname = "kick"
 	pointer = 'icons/effects/mousemice/human_kick.dmi'
 
 /datum/intent/bite
@@ -236,7 +266,8 @@
 	chargetime = 0
 	swingdelay = 0
 	unarmed = TRUE
-	noaa = TRUE
+	noaa = FALSE
+	animname = "bite"
 	attack_verb = list("bites")
 
 /datum/intent/jump
@@ -422,11 +453,13 @@
 	icon_state = "inpunch"
 	attack_verb = list("punches", "jabs", "clocks", "strikes")
 	chargetime = 0
-	animname = "blank22"
+	noaa = FALSE
+	animname = "bite"
 	hitsound = list('sound/combat/hits/punch/punch (1).ogg', 'sound/combat/hits/punch/punch (2).ogg', 'sound/combat/hits/punch/punch (3).ogg')
 	misscost = 5
 	releasedrain = 2	//Lowered for intent stam usage.
 	swingdelay = 0
+	clickcd = 10
 	rmb_ranged = TRUE
 	candodge = TRUE
 	canparry = TRUE
@@ -434,6 +467,7 @@
 	miss_text = "swing a fist at the air"
 	miss_sound = "punchwoosh"
 	item_d_type = "blunt"
+	intent_intdamage_factor = 0.5
 
 /datum/intent/unarmed/punch/rmb_ranged(atom/target, mob/user)
 	if(ismob(target))
@@ -638,3 +672,7 @@
 	item_d_type = "blunt"
 	intent_effect = /datum/status_effect/debuff/dazed
 	target_parts = list(BODY_ZONE_HEAD)
+
+/*/datum/intent/effect/daze/shield
+	intent_effect = /datum/status_effect/debuff/dazed/shield
+	swingdelay = 3 */

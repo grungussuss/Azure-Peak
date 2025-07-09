@@ -111,6 +111,8 @@
 	var/original_dir
 	///Whether this track allows its owner to be Marked
 	var/markable = TRUE
+	///Base difficulty for noticing these tracks
+	var/base_diff = 11
 
 /obj/effect/track/Initialize()
 	. = ..()
@@ -146,14 +148,14 @@
 		return FALSE
 	var/success = FALSE
 	if(!HAS_TRAIT(user, TRAIT_PERFECT_TRACKER))
-		var/diff = 11 //Base Tracking Difficulty
+		var/diff = base_diff //Base Tracking Difficulty
 		diff += tracking_modifier
 		diff += round((world.time - creation_time) / (60 SECONDS), 1) //Gets more difficult to spot the older.
 		diff += rand(0, 5) //Entropy.
 
 		var/competence = user.STAPER
 		if(user.mind)
-			competence += 2 * user.mind.get_skill_level(/datum/skill/misc/tracking)
+			competence += 2 * user.get_skill_level(/datum/skill/misc/tracking)
 
 		if(competence >= diff)
 			success = TRUE
@@ -175,7 +177,7 @@
 		diff += round((world.time - creation_time) / (60 SECONDS), 1) 
 		var/competence = abs(user.STAPER - 5)
 		if(user.mind)
-			competence += 5 * user.mind.get_skill_level(/datum/skill/misc/tracking) //Skill is much more relevant for analysis.
+			competence += 5 * user.get_skill_level(/datum/skill/misc/tracking) //Skill is much more relevant for analysis.
 		switch(competence - diff)
 			if(30 to INFINITY)
 				analysis_result = ANALYSIS_PERFECT
@@ -302,7 +304,7 @@
 		var/mob/living/carbon/human/H = user
 		if(!isnull(H.current_mark) && H.current_mark == creator)
 			. += span_nicegreen("This track belongs to your mark.")
-		if(H.mind?.get_skill_level(/datum/skill/misc/tracking) >= SKILL_LEVEL_EXPERT)
+		if(H.get_skill_level(/datum/skill/misc/tracking) >= SKILL_LEVEL_EXPERT)
 			. += span_nicegreen("<i><font size = 2>Right-click this track to Mark its owner.</font></i>")
 	return .
 
@@ -331,7 +333,7 @@
 			var/skill = I.associated_skill
 			this.tool_used = I.name
 			if(skill)
-				this.skill_level = mind?.get_skill_level(skill)
+				this.skill_level = get_skill_level(skill)
 	else
 		if(!(mobility_flags & MOBILITY_STAND)) //Either pulled or crawling.
 			this_track.track_type = "drag marks"
@@ -393,7 +395,7 @@
 	if(m_intent == MOVE_INTENT_SNEAK)
 		var/remaining_mod = 0.7
 		if(mind)
-			remaining_mod -= 0.1 * mind.get_skill_level(/datum/skill/misc/sneaking)
+			remaining_mod -= 0.1 * get_skill_level(/datum/skill/misc/sneaking)
 		. *= remaining_mod
 	else if(m_intent == MOVE_INTENT_RUN)
 		. *= 3
@@ -468,7 +470,7 @@
 /obj/effect/track/attack_right(mob/user)
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
-		if(H.mind?.get_skill_level(/datum/skill/misc/tracking) > SKILL_LEVEL_JOURNEYMAN)	//Expert+
+		if(H.get_skill_level(/datum/skill/misc/tracking) > SKILL_LEVEL_JOURNEYMAN)	//Expert+
 			if(!markable)
 				to_chat(H, span_warning("This is not enough to Mark them. I need proper tracks."))
 			to_chat(H, span_info("You start taking note of the person's gait, weight and other distinct features."))
@@ -478,6 +480,35 @@
 		else
 			to_chat(H, span_info("I am not skilled enough for this! (Expert level required)"))
 
+/obj/effect/track/thievescant
+	name = "engraved symbols"
+	gender = PLURAL
+	real_icon_state = "thieves_cant"
+	markable = FALSE
+	base_diff = 5 //Easier to notice
+	var/message
+
+/obj/effect/track/thievescant/handle_creation(mob/living/track_source, thiefmessage)
+	creator = track_source
+	RegisterSignal(track_source, COMSIG_PARENT_QDELETING, PROC_REF(clear_creator_reference))
+	creation_time = world.time
+	track_source.get_track_info(src)
+	real_image = image(icon, src, real_icon_state, BULLET_HOLE_LAYER, track_source.dir)
+	alpha = 128
+	message = thiefmessage
+
+/obj/effect/track/thievescant/knowledge_readout(mob/user, knowledge)
+	if(!user.has_language(/datum/language/thievescant))
+		. += "Looks like a bunch of meaningless engravings..."
+	else
+		. += "An engraved message left by [creator == user ? "me" : "one of my fellows"]. It reads...<br>"
+		. += "<font color = '#0d5381'>\"[message]\"</font>"
+
+	return .
+
+/obj/effect/track/thievescant/attack_right(mob/user)
+	to_chat(user,span_info("You can't distinguish an object like this."))
+	return
 
 #undef ANALYSIS_TERRIBLE
 #undef ANALYSIS_BAD

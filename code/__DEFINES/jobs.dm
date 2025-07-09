@@ -105,13 +105,14 @@
 #define GUARD_CAPTAIN		(1<<5)
 #define MARSHAL		(1<<6)
 #define HOSTAGE		(1<<7)
+#define SUITOR		(1<<8)
 
 #define GARRISON		(1<<1)
 
 #define GUARDSMAN	(1<<0)
 #define MANATARMS	(1<<1)
 #define DUNGEONEER	(1<<2)
-#define GATEMASTER	(1<<3)
+#define SQUIRE		(1<<3)
 #define BOGGUARD	(1<<4)
 #define SERGEANT	(1<<5)
 #define SHERIFF		(1<<6)
@@ -135,12 +136,7 @@
 
 #define BARKEEP		(1<<0)
 #define ARCHIVIST	(1<<1)
-#define ARMORSMITH	(1<<2)
-#define WEAPONSMITH (1<<3)
-#define BLACKSMITH  (1<<4)
 #define ALCHEMIST	(1<<5)
-#define ARTIFICER	(1<<6)
-#define TAILOR		(1<<7)
 #define MERCHANT	(1<<8)
 #define SCRIBE		(1<<9)
 #define ELDER		(1<<10)
@@ -174,14 +170,13 @@
 
 #define APPRENTICE	(1<<0)
 #define CHURCHLING	(1<<1)
-#define SQUIRE		(1<<2)
-#define SERVANT		(1<<3)
-#define ORPHAN		(1<<4)
-#define PRINCE		(1<<5)
-#define SHOPHAND	(1<<6)
-#define CLERK 		(1<<7)
-#define MAGEAPPRENTICE	(1<<8)
-#define APOTHECARY	(1<<9)
+#define SERVANT		(1<<2)
+#define ORPHAN		(1<<3)
+#define PRINCE		(1<<4)
+#define SHOPHAND	(1<<5)
+#define CLERK 		(1<<6)
+#define MAGEAPPRENTICE	(1<<7)
+#define APOTHECARY	(1<<8)
 
 #define MERCENARIES		(1<<7)
 
@@ -203,18 +198,24 @@
 #define TESTER		(1<<0)
 #define DEATHKNIGHT (1<<1)
 #define SKELETON	(1<<2)
+#define GOBLIN		(1<<3)
 
 #define INQUISITION (1<<10)
 
 #define PURITAN		(1<<0)
 #define ORTHODOXIST	(1<<1)
 
+#define GUILDSMEN	(1<<11)
+#define GUILDMASTER (1<<1)
+#define GUILDSMAN  	(1<<2)
+#define TAILOR		(1<<3)
 
 #define JCOLOR_NOBLE "#aa83b9"
 #define JCOLOR_COURTIER "#81adc8"
 #define JCOLOR_CHURCH "#c0ba8d"
 #define JCOLOR_SOLDIER "#b18484"
 #define JCOLOR_YEOMAN "#819e82"
+#define JCOLOR_GUILD "#6e6259"
 #define JCOLOR_PEASANT "#b09262"
 #define JCOLOR_MERCENARY "#c86e3a"
 #define JCOLOR_INQUISITION "#FF0000"
@@ -225,6 +226,7 @@
 #define JDO_LORD 1
 #define JDO_LADY 1.1
 #define JDO_PRINCE 1.2
+#define JDO_SUITOR 1.3
 #define JDO_HAND 2
 #define JDO_STEWARD 3
 #define JDO_CLERK 3.1
@@ -264,15 +266,11 @@
 #define JDO_GRABBER 17.2
 
 #define JDO_ARCHIVIST 18
-
 #define JDO_CHIEF 18.1
-#define JDO_ARMORER 19.1
-#define JDO_WEAPONSMITH 19.2
-#define JDO_BLACKSMITH 20
-#define JDO_APPRENTICE 21
 
-#define JDO_ARTIFICER 22
-#define JDO_TAILOR 24
+#define JDO_GUILDMASTER 19.1
+#define JDO_GUILDSMAN 19.2
+#define JDO_TAILOR 19.3
 
 #define JDO_BARKEEP 26
 #define JDO_COOK 27
@@ -310,13 +308,17 @@
 #define JDO_PURITAN 40
 #define JDO_ORTHODOXIST 40.1
 
+#define BITFLAG_CHURCH (1<<0)
+#define BITFLAG_ROYALTY (1<<1)
+#define BITFLAG_CONSTRUCTOR (1<<2)
+#define BITFLAG_GARRISON (1<<3)
+
 #define MANOR_ROLES \
 	/datum/job/roguetown/jester,\
 	/datum/job/roguetown/veteran,\
 	/datum/job/roguetown/clerk,\
 	/datum/job/roguetown/wapprentice,\
 	/datum/job/roguetown/servant,\
-	/datum/job/roguetown/squire,\
 	/datum/job/roguetown/butler,\
 	/datum/job/roguetown/apothecary,\
 	/datum/job/roguetown/magician
@@ -365,15 +367,11 @@
 	/datum/job/roguetown/niteman,\
 	/datum/job/roguetown/archivist,\
 	/datum/job/roguetown/barkeep,\
-	/datum/job/roguetown/armorsmith,\
-	/datum/job/roguetown/weaponsmith,\
-	/datum/job/roguetown/blacksmith,\
-	/datum/job/roguetown/artificer,\
-	/datum/job/roguetown/merchant,\
+	/datum/job/roguetown/guildsmaster,\
+	/datum/job/roguetown/guildsman,\
 	/datum/job/roguetown/tailor,\
+	/datum/job/roguetown/merchant,\
 	/datum/job/roguetown/scribe
-
-
 
 #define WANDERER_ROLES \
 	/datum/job/roguetown/pilgrim,\
@@ -390,6 +388,7 @@
 	/datum/job/roguetown/gatemaster,\
 	/datum/job/roguetown/manorguard,\
 	/datum/job/roguetown/sheriff,\
+	/datum/job/roguetown/squire,\
 	/datum/job/roguetown/guardsman
 
 #define INQUISITION_ROLES \

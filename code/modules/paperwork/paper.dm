@@ -157,7 +157,7 @@
 		return
 	if(!user.can_read(src))
 		if(info)
-			user.mind.adjust_experience(/datum/skill/misc/reading, 2, FALSE)
+			user.adjust_experience(/datum/skill/misc/reading, 2, FALSE)
 		return
 	if(mailer)
 		return
@@ -336,7 +336,8 @@
 		((text)) : Decreases the <font size = \"1\">size</font> of the text.<br>
 		* item : An unordered list item.<br>
 		&nbsp;&nbsp;* item: An unordered list child item.<br>
-		--- : Adds a horizontal rule.
+		--- : Adds a horizontal rule.<br>
+		-=FFFFFFtext=- : Adds a specific <font color = '#FFFFFF'>colour</font> to text.
 	</BODY></HTML>"}, "window=paper_help")
 
 

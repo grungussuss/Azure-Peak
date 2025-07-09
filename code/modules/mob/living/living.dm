@@ -58,6 +58,7 @@
 	playsound(src.loc, 'sound/foley/zfall.ogg', 100, FALSE)
 	if(!isgroundlessturf(T))
 		ZImpactDamage(T, levels)
+		GLOB.azure_round_stats[STATS_MOAT_FALLERS]++
 	return ..()
 
 /mob/living/proc/ZImpactDamage(turf/T, levels)
@@ -201,7 +202,16 @@
 				self_points -= 99
 				instafail = TRUE
 				to_chat(src, span_warning("I changed direction too late!"))
-
+			var/clash_blocked
+			if(L.has_status_effect(/datum/status_effect/buff/clash) && !instafail)
+				self_points -= 99
+				L.remove_status_effect(/datum/status_effect/buff/clash)
+				to_chat(src, span_warning("[L] was ready for me!"))
+				if(prob(10))
+					playsound(src, 'sound/combat/clash_charge_meme.ogg', 100)
+				else
+					playsound(src, 'sound/combat/clash_charge.ogg', 100)
+				clash_blocked = TRUE
 			if(self_points > target_points)
 				L.Knockdown(1)
 			if(self_points < target_points)
@@ -209,19 +219,22 @@
 			if(self_points == target_points)
 				L.Knockdown(1)
 				Knockdown(30)
-			Immobilize(30)
+			Immobilize(10)
 			var/playsound = FALSE
-			if(apply_damage(15, BRUTE, "head", run_armor_check("head", "blunt", damage = 20)))
+			if(L.apply_damage(15, BRUTE, "chest", L.run_armor_check("chest", "blunt", damage = 10)))
 				playsound = TRUE
-			if(!instafail)
-				if(L.apply_damage(15, BRUTE, "chest", L.run_armor_check("chest", "blunt", damage = 10)))
+			if(instafail)
+				if(apply_damage(15, BRUTE, "head", run_armor_check("head", "blunt", damage = 20)))
 					playsound = TRUE
 			if(playsound)
 				playsound(src, "genblunt", 100, TRUE)
-			if(!instafail)
-				visible_message(span_warning("[src] charges into [L]!"), span_warning("I charge into [L]!"))
+			if(instafail || clash_blocked)
+				if(instafail)
+					visible_message(span_warning("[src] smashes into [L] with no headstart!"), span_warning("I charge into [L] too early!"))
+				if(clash_blocked)
+					visible_message(span_warning("[src] gets tripped by [L]!"), span_warning("I get tripped by [L]!"))
 			else
-				visible_message(span_warning("[src] smashes into [L] with no headstart!"), span_warning("I charge into [L] too early!"))
+				visible_message(span_warning("[src] charges into [L]!"), span_warning("I charge into [L]!"))
 			return TRUE
 
 	//okay, so we didn't switch. but should we push?
@@ -298,6 +311,10 @@
 			to_chat(L, span_warning("[src] is missing that."))
 			return FALSE
 		if(!lying_attack_check(L))
+			return FALSE
+		// snowflake check for blocking mouthgrabs on biting deadites
+		if(L.zone_selected == BODY_ZONE_PRECISE_MOUTH && istype(mouth, /obj/item/grabbing/bite))
+			to_chat(L, span_warning("You can't grab [src]'s mouth while [p_theyre()] biting something!"))
 			return FALSE
 	return TRUE
 
@@ -587,6 +604,10 @@
 		return
 	if (InCritical() || health <= 0 || (blood_volume < BLOOD_VOLUME_SURVIVE))
 		log_message("Has [whispered ? "whispered his final words" : "succumbed to death"] while in [InFullCritical() ? "hard":"soft"] critical with [round(health, 0.1)] points of health!", LOG_ATTACK)
+		
+		if(istype(src.loc, /turf/open/water) && !HAS_TRAIT(src, TRAIT_NOBREATH) && lying && client)
+			GLOB.azure_round_stats[STATS_PEOPLE_DROWNED]++
+
 		adjustOxyLoss(201)
 		updatehealth()
 //		if(!whispered)
@@ -816,6 +837,7 @@
 			wound.heal_wound(wound.whp)
 	ExtinguishMob()
 	fire_stacks = 0
+	divine_fire_stacks = 0
 	confused = 0
 	dizziness = 0
 	drowsyness = 0
@@ -1016,6 +1038,7 @@
 			return
 	log_combat(src, null, "surrendered")
 	surrendering = 1
+	GLOB.azure_round_stats[STATS_YIELDS]++
 	toggle_cmode()
 	changeNext_move(CLICK_CD_EXHAUSTED)
 	var/obj/effect/temp_visual/surrender/flaggy = new(src)
@@ -1067,9 +1090,9 @@
 	var/agg_grab = FALSE
 
 	if(mind)
-		wrestling_diff += (mind.get_skill_level(/datum/skill/combat/wrestling)) //NPCs don't use this
+		wrestling_diff += (get_skill_level(/datum/skill/combat/wrestling)) //NPCs don't use this
 	if(L.mind)
-		wrestling_diff -= (L.mind.get_skill_level(/datum/skill/combat/wrestling))
+		wrestling_diff -= (L.get_skill_level(/datum/skill/combat/wrestling))
 	if(L.grab_state > GRAB_PASSIVE)
 		agg_grab = TRUE
 
@@ -1091,7 +1114,7 @@
 
 	if(moving_resist && client) //we resisted by trying to move
 		client.move_delay = world.time + 20
-	rogfat_add(rand(5,15))
+	stamina_add(rand(5,15))
 
 	if(!prob(resist_chance))
 		var/rchance = ""
@@ -1348,9 +1371,6 @@
 		return FALSE
 	return TRUE
 
-/mob/living/proc/update_stamina()
-	return
-
 /mob/living/proc/owns_soul()
 	if(mind)
 		return mind.soulOwner == mind
@@ -1394,7 +1414,7 @@
 
 //Mobs on Fire
 /mob/living/proc/IgniteMob()
-	if(fire_stacks > 0 && !on_fire)
+	if((fire_stacks > 0 || divine_fire_stacks > 0) && !on_fire)
 		if(HAS_TRAIT(src, TRAIT_NOFIRE) && prob(90)) // Nofire is described as nonflammable, not immune. 90% chance of avoiding ignite
 			return
 		testing("ignis")
@@ -1427,6 +1447,9 @@
 	fire_stacks = CLAMP(fire_stacks + add_fire_stacks, -20, 20)
 	if(on_fire && fire_stacks <= 0)
 		ExtinguishMob()
+
+/mob/living/proc/adjust_divine_fire_stacks(add_fire_stacks) //Adjusting the amount of divine_fire_stacks we have on person
+	divine_fire_stacks = CLAMP(divine_fire_stacks + add_fire_stacks, 0, 100)
 
 //Share fire evenly between the two mobs
 //Called in MobBump() and Crossed()
@@ -1759,7 +1782,7 @@
 	changeNext_move(HAS_TRAIT(src, TRAIT_SLEUTH) ? CLICK_CD_SLEUTH : CLICK_CD_TRACKING)
 	if(m_intent != MOVE_INTENT_SNEAK)
 		visible_message(span_info("[src] begins looking around."))
-	var/looktime = 50 - (STAPER * 2) - (mind?.get_skill_level(/datum/skill/misc/tracking) * 5)
+	var/looktime = 50 - (STAPER * 2) - (get_skill_level(/datum/skill/misc/tracking) * 5)
 	looktime = clamp(looktime, 7, 50)
 	if(HAS_TRAIT(src, TRAIT_SLEUTH) ? move_after(src, looktime, target = src) : do_after(src, looktime, target = src))
 		for(var/mob/living/M in view(7,src))
@@ -1768,14 +1791,14 @@
 				continue
 			if(see_invisible < M.invisibility)
 				continue
-			var/probby = (2 * STAPER) + (mind?.get_skill_level(/datum/skill/misc/tracking)) * 5
+			var/probby = (2 * STAPER) + (get_skill_level(/datum/skill/misc/tracking)) * 5
 			if(M.mob_timers[MT_INVISIBILITY] > world.time) // Check if the mob is affected by the invisibility spell
-				if(mind?.get_skill_level(/datum/skill/misc/tracking) <= SKILL_LEVEL_EXPERT)	//Master or Legendary from this point
+				if(get_skill_level(/datum/skill/misc/tracking) <= SKILL_LEVEL_EXPERT)	//Master or Legendary from this point
 					continue
 			if(M.mind)	//We find the biggest value and use that, to account for mages / Nocites / sneaky people all at once
-				var/target_sneak = M.mind?.get_skill_level(/datum/skill/misc/sneaking)
-				var/target_holy = M.mind?.get_skill_level(/datum/skill/magic/holy)
-				var/target_arcyne = M.mind?.get_skill_level(/datum/skill/magic/arcane)
+				var/target_sneak = M.get_skill_level(/datum/skill/misc/sneaking)
+				var/target_holy = M.get_skill_level(/datum/skill/magic/holy)
+				var/target_arcyne = M.get_skill_level(/datum/skill/magic/arcane)
 				var/chosen_skill = max(target_sneak, target_holy, target_arcyne)
 				probby -= chosen_skill * 5
 				if(M.STAPER > 10)

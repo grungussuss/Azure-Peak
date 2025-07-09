@@ -162,7 +162,7 @@
 			var/mob/living/carbon/C = user
 			if(C.domhand)
 				used_str = C.get_str_arms(C.used_hand)
-			C.rogfat_add(max(60 - (used_str * 5), 1))
+			C.stamina_add(max(60 - (used_str * 5), 1))
 		if(stage < 3)
 			if(faildirt < 2)
 				if(prob(used_str * 5))
@@ -177,6 +177,8 @@
 			locked = FALSE
 			open()
 			for(var/obj/structure/gravemarker/G in loc)
+				record_featured_stat(FEATURED_STATS_CRIMINALS, user)
+				GLOB.azure_round_stats[STATS_GRAVES_ROBBED]++
 				qdel(G)
 				if(isliving(user))
 					var/mob/living/L = user

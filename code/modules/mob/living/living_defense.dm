@@ -157,7 +157,7 @@
 	if(!maxstacks)
 		maxstacks = 1
 	if(maxstacks)
-		if(fire_stacks >= maxstacks)
+		if(fire_stacks + divine_fire_stacks >= maxstacks)
 			return
 	if(added)
 		adjust_fire_stacks(added)
@@ -184,13 +184,13 @@
 
 //proc to upgrade a simple pull into a more aggressive grab.
 /mob/living/proc/grippedby(mob/living/carbon/user, instant = FALSE)
-	user.changeNext_move(CLICK_CD_MELEE * 2 - user.STASPD)
+	user.changeNext_move(CLICK_CD_GRABBING * 2 - user.STASPD)
 	var/skill_diff = 0
 	var/combat_modifier = 1
 	if(user.mind)
-		skill_diff += (user.mind.get_skill_level(/datum/skill/combat/wrestling)) //NPCs don't use this
+		skill_diff += (user.get_skill_level(/datum/skill/combat/wrestling)) //NPCs don't use this
 	if(mind)
-		skill_diff -= (mind.get_skill_level(/datum/skill/combat/wrestling))
+		skill_diff -= (get_skill_level(/datum/skill/combat/wrestling))
 
 	if(user == src)
 		instant = TRUE
@@ -245,7 +245,8 @@
 		add_log = " (pacifist)"
 	send_grabbed_message(user)
 	if(user != src)
-		stop_pulling()
+		if(pulling != user) // If the person we're pulling aggro grabs us don't break the grab
+			stop_pulling()
 		user.set_pull_offsets(src, user.grab_state)
 	log_combat(user, src, "grabbed", addition="aggressive grab[add_log]")
 	return 1
@@ -454,7 +455,7 @@
 	return
 
 
-/mob/living/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect)
+/mob/living/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect, item_animation_override = null, datum/intent/used_intent, simplified = TRUE)
 	if(!used_item)
 		used_item = get_active_held_item()
 	..()

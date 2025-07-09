@@ -27,6 +27,10 @@
 	misscost = 0
 	no_attack = TRUE
 
+/obj/item/rogueweapon/thresher/examine(mob/user)
+	. = ..()
+	. += span_notice("Use on STRIKE intent to break up produce for seeds. THRESH on stalks to beat out grains.")
+
 /obj/item/rogueweapon/thresher/getonmobprop(tag)
 	. = ..()
 	if(tag)
@@ -76,6 +80,10 @@
 	slot_flags = ITEM_SLOT_HIP
 	max_blade_int = 50
 	smeltresult = /obj/item/ingot/iron
+
+/obj/item/rogueweapon/sickle/examine(mob/user)
+	. = ..()
+	. += span_notice("Use on any plant to instantly harvest it. HERBS turn to fiber when attacked.")
 
 /obj/item/rogueweapon/sickle/getonmobprop(tag)
 	. = ..()
@@ -137,6 +145,10 @@
 	hoe_damage = 25
 	work_time = 15 SECONDS
 
+/obj/item/rogueweapon/hoe/examine(mob/user)
+	. = ..()
+	. += span_notice("TILT intent allows you to make new plots for plants. Using it (on any intent) on a plot that already has something planted removes WEEDS.")
+
 /obj/item/rogueweapon/hoe/getonmobprop(tag)
 	. = ..()
 	if(tag)
@@ -190,10 +202,10 @@
 
 /obj/item/rogueweapon/hoe/attack_turf(turf/T, mob/living/user)
 	if(user.used_intent.type == /datum/intent/till)
-		if(user.mind.get_skill_level(/datum/skill/labor/farming) == SKILL_LEVEL_LEGENDARY) //check if the user has legendary farming skill
+		if(user.get_skill_level(/datum/skill/labor/farming) == SKILL_LEVEL_LEGENDARY) //check if the user has legendary farming skill
 			work_time = 0.5 SECONDS //if legendary skill, do_afters take half a second instead of 3
 
-		user.changeNext_move(CLICK_CD_MELEE)
+		user.changeNext_move(CLICK_CD_INTENTCAP)
 		if(istype(T, /turf/open/floor/rogue/snow) || istype(T, /turf/open/floor/rogue/snowrough) || istype(T, /turf/open/floor/rogue/snowpatchy))
 			playsound(T,'sound/items/dig_shovel.ogg', 100, TRUE)
 			if (do_after(user, work_time, target = src))
@@ -282,6 +294,10 @@
 	slot_flags = ITEM_SLOT_BACK
 	drop_sound = 'sound/foley/dropsound/wooden_drop.ogg'
 	smeltresult = /obj/item/ingot/iron
+
+/obj/item/rogueweapon/pitchfork/examine(mob/user)
+	. = ..()
+	. += span_notice("Use RIGHT CLICK to flip compost in the bin. While wielded SCOOP intent allows you to pick up large amount (19) stalks.")
 
 /obj/item/rogueweapon/pitchfork/getonmobprop(tag)
 	. = ..()

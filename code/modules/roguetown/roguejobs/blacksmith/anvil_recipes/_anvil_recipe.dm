@@ -8,7 +8,7 @@
 	var/skill_quality = 0 // Accumulated per hit based on calculations, will decide final result.
 	var/appro_skill = /datum/skill/craft/blacksmithing
 	var/atom/req_bar
-	var/atom/created_item
+	var/atom/movable/created_item
 	var/createditem_num = 1 // How many units to make.
 	var/craftdiff = 0
 	var/needed_item
@@ -32,7 +32,7 @@
 	var/mob/living/L = user
 	var/moveup = 1
 	var/proab = 0 // Probability to not spoil the bar
-	var/skill_level	= user.mind.get_skill_level(appro_skill)
+	var/skill_level	= user.get_skill_level(appro_skill)
 	if(progress >= max_progress)
 		to_chat(user, span_info("It's ready."))
 		user.visible_message(span_warning("[user] strikes the bar!"))
@@ -145,6 +145,7 @@
 			modifier = 1.3
 			I.polished = 4
 			I.AddComponent(/datum/component/metal_glint)
+			GLOB.azure_round_stats[STATS_MASTERWORKS_FORGED]++
 
 	if(!modifier) // Sanity.
 		return
@@ -168,38 +169,6 @@
 		<meta charset='UTF-8'>
 		<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'/>
 		<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-
-		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Charm:wght@700&display=swap');
-			body {
-				font-family: "Charm", cursive;
-				font-size: 1em;
-				text-align: center;
-				margin: 20px;
-				background-color: #f4efe6;
-				color: #3e2723;
-				background-color: rgb(31, 20, 24);
-				background:
-					url('book.png');
-				background-repeat: no-repeat;
-				background-attachment: fixed;
-				background-size: 100% 100%;
-
-			}
-			h1 {
-				text-align: center;
-				font-size: 1.5em;
-				border-bottom: 2px solid #3e2723;
-				padding-bottom: 10px;
-				margin-bottom: 20px;
-			}
-			.icon {
-				width: 96px;
-				height: 96px;
-				vertical-align: middle;
-				margin-right: 10px;
-			}
-		</style>
 		<body>
 		  <div>
 		    <h1>[name]</h1>
@@ -233,6 +202,11 @@
 		html += "<strong class=class='scroll'>and then you get</strong> <br> [createditem_num] [icon2html(new created_item, user)] <br> [initial(created_item.name)]<br>"
 	else
 		html += "<strong class=class='scroll'>and then you get</strong> <br> [icon2html(new created_item, user)] <br> [initial(created_item.name)]<br>"
+
+	if(created_item.sellprice)
+		html += "<strong class=class='scroll'>You can sell this for [created_item.sellprice] mammons at a normal quality</strong> <br>"
+	else
+		html += "<strong class=class='scroll'>This is worthless for export</strong> <br>"
 
 	html += {"
 		</div>

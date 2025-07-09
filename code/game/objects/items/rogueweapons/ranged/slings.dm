@@ -17,7 +17,7 @@
 	if(mastermob && chargetime)
 		var/newtime = 0 //value to determine charging time in deciseconds
 		newtime = (newtime + 20) //base 2.0 seconds
-		newtime = (newtime - (mastermob.mind?.get_skill_level(/datum/skill/combat/slings) * 1.5)) //each point of skill is -0.15 seconds, maximum -0.9 seconds
+		newtime = (newtime - (mastermob.get_skill_level(/datum/skill/combat/slings) * 1.5)) //each point of skill is -0.15 seconds, maximum -0.9 seconds
 		newtime = (newtime - (mastermob.STAPER / 2)) //each point of perception is -0.05 seconds, maximum -1.0 second
 		newtime = (newtime - (mastermob.STASTR / 5)) //each point of strength is -0.02 seconds, maximum -0.4 seconds
 		if(newtime > 0.5)
@@ -44,7 +44,7 @@
 	if(mastermob && chargetime)
 		var/newtime = 0 //value to determine charging time in deciseconds
 		newtime = (newtime + 22) //base 2.2 seconds
-		newtime = (newtime - (mastermob.mind?.get_skill_level(/datum/skill/combat/slings) * 1.5)) //each point of skill is -0.15 seconds, maximum -0.9 seconds
+		newtime = (newtime - (mastermob.get_skill_level(/datum/skill/combat/slings) * 1.5)) //each point of skill is -0.15 seconds, maximum -0.9 seconds
 		newtime = (newtime - (mastermob.STAPER / 2)) //each point of perception is -0.05 seconds, maximum -1.0 second
 		newtime = (newtime - (mastermob.STASTR / 5)) //each point of strength is -0.02 seconds, maximum -0.4 seconds
 		if(newtime > 0.5)
@@ -181,6 +181,9 @@
 		if (temp_stone != null) //reseting after stone ammo use
 			bonus_stone_force = 0 //stone is thrown, so the bonus is lost
 			temp_stone = null //stone is gone, forever.
+	if(user.has_status_effect(/datum/status_effect/buff/clash) && ishuman(user))
+		var/mob/living/carbon/human/H = user
+		H.bad_guard(span_warning("I can't focus on my Guard and sling rocks! This drains me!"), cheesy = TRUE)
 	. = ..()
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/sling/update_icon()

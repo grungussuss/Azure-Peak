@@ -20,6 +20,7 @@
 	hitsound = list('sound/combat/hits/bladed/genchop (1).ogg', 'sound/combat/hits/bladed/genchop (2).ogg', 'sound/combat/hits/bladed/genchop (3).ogg')
 	penfactor = 35
 	swingdelay = 10
+	clickcd = 14
 	item_d_type = "slash"
 
 /datum/intent/axe/chop/scythe
@@ -69,6 +70,7 @@
 	max_blade_int = 100
 	minstr = 8
 	wdefense = 1
+	demolition_mod = 1.25
 	w_class = WEIGHT_CLASS_BULKY
 	wlength = WLENGTH_SHORT
 	pickup_sound = 'sound/foley/equip/rummaging-03.ogg'
@@ -243,7 +245,6 @@
 	icon_state = "chatchet"
 	smeltresult = /obj/item/ingot/copper
 
-
 /obj/item/rogueweapon/stoneaxe/handaxe
 	force = 19
 	possible_item_intents = list(/datum/intent/axe/cut,/datum/intent/axe/chop, /datum/intent/sword/peel)
@@ -257,6 +258,7 @@
 	wdefense = 2
 
 /obj/item/rogueweapon/stoneaxe/woodcut/steel
+	name = "steel axe"
 	icon_state = "saxe"
 	desc = "A steel woodcutting axe. Performs much better than its iron counterpart."
 	force = 26
@@ -271,6 +273,28 @@
 	icon_state = "ahandaxe"
 	smeltresult = /obj/item/ingot/aaslag
 
+/datum/intent/axe/cut/long
+	reach = 2
+
+/datum/intent/axe/chop/long
+	reach = 2
+
+/obj/item/rogueweapon/stoneaxe/woodcut/steel/woodcutter
+	name = "woodcutter's axe"
+	icon = 'icons/roguetown/weapons/64.dmi'
+	icon_state = "woodcutter"
+	desc = "A long-handled axe with a carved grip, made of high quality wood. Perfect for those in the lumber trade."
+	max_integrity = 300		//100 higher than normal; basically it's main difference.
+	possible_item_intents = list(/datum/intent/axe/cut,/datum/intent/axe/chop, /datum/intent/axe/bash, /datum/intent/sword/peel)
+	gripped_intents = list(/datum/intent/axe/cut/long, /datum/intent/axe/chop/long, /datum/intent/axe/bash, /datum/intent/sword/peel)
+	wlength = WLENGTH_LONG
+	w_class = WEIGHT_CLASS_BULKY
+	demolition_mod = 1.5			//Base is 1.25, so 25% extra. Helps w/ caprentry and building kinda.
+	slot_flags = ITEM_SLOT_BACK		//Needs to go on back.
+	inhand_x_dimension = 64
+	inhand_y_dimension = 64
+	bigboy = TRUE
+	
 /obj/item/rogueweapon/stoneaxe/woodcut/getonmobprop(tag)
 	. = ..()
 	if(tag)
@@ -278,7 +302,7 @@
 			if("gen")
 				return list("shrink" = 0.5,"sx" = -9,"sy" = -8,"nx" = 9,"ny" = -7,"wx" = -7,"wy" = -8,"ex" = 3,"ey" = -8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 90,"sturn" = -90,"wturn" = -90,"eturn" = 90,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
 			if("wielded")
-				return list("shrink" = 0.6,"sx" = 2,"sy" = -8,"nx" = -6,"ny" = -3,"wx" = 3,"wy" = -4,"ex" = 4,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -44,"sturn" = 45,"wturn" = 47,"eturn" = 33,"nflip" = 8,"sflip" = 0,"wflip" = 0,"eflip" = 0)
+				return list("shrink" = 0.7,"sx" = 4,"sy" = -4,"nx" = -6,"ny" = -3,"wx" = -4,"wy" = -4,"ex" = 4,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -44,"sturn" = 45,"wturn" = -33,"eturn" = 33,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0)
 			if("onbelt")
 				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 
@@ -316,7 +340,7 @@
 				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 	return ..()
 
-/obj/item/rogueweapon/stoneaxe/silver
+/obj/item/rogueweapon/stoneaxe/woodcut/silver
 	name = "silver war axe"
 	desc = "A one-handed war axe forged of silver."
 	icon_state = "silveraxe"
@@ -372,6 +396,7 @@
 	associated_skill = /datum/skill/combat/axes
 	blade_dulling = DULLING_SHAFT_WOOD
 	wdefense = 6
+	demolition_mod = 1.5
 
 /obj/item/rogueweapon/greataxe/getonmobprop(tag)
 	. = ..()
@@ -407,3 +432,44 @@
 	icon_state = "doublegreataxe"
 	icon = 'icons/roguetown/weapons/64.dmi'
 	minstr = 12
+
+/obj/item/rogueweapon/greataxe/steel/doublehead/graggar
+	name = "vicious greataxe"
+	desc = "A greataxe who's edge thrums with the motive force, violence, oh, sweet violence!"
+	icon_state = "graggargaxe"
+	blade_dulling = DULLING_SHAFT_GRAND
+	force = 20
+	force_wielded = 40
+	icon = 'icons/roguetown/weapons/64.dmi'
+
+/obj/item/rogueweapon/greataxe/steel/doublehead/graggar/pickup(mob/living/user)
+	if(!HAS_TRAIT(user, TRAIT_HORDE))
+		to_chat(user, "<font color='red'>UNWORTHY HANDS TOUCHING THIS AXE, CEASE OR BE PUNISHED!</font>")
+		user.adjust_fire_stacks(5)
+		user.IgniteMob()
+		user.Stun(40)
+	..()
+
+////////////////////////////////////////
+// Unique loot axes; mostly from mobs //
+////////////////////////////////////////
+
+/obj/item/rogueweapon/greataxe/steel/doublehead/minotaur
+	name = "minotaur greataxe"
+	desc = "An incredibly heavy and large axe, pried from the cold-dead hands of Dendor's most wicked of beasts."
+	icon_state = "minotaurgreataxe"
+	blade_dulling = DULLING_SHAFT_WOOD	//Suffer & go upgrade it
+	force = 20							//Same as Graggar axe, only cus it's rare enough. Plus has the high strength req and crap starting-shaft.
+	force_wielded = 40
+	minstr = 15							//Boo-womp
+
+/obj/item/rogueweapon/stoneaxe/woodcut/troll
+	name = "crude heavy axe"
+	desc = "An axe clearly made for some large crecher. Though crude in design, it appears to have a fair amount of weight to it.."
+	icon_state = "trollaxe"
+	force = 25
+	force_wielded = 30					//Basically a slight better steel cutting axe.
+	max_integrity = 150					//50% less than normal axe
+	max_blade_int = 300
+	minstr = 13							//Heavy, but still good.
+	wdefense = 3						//Slightly better than norm, has 6 defense 2 handing it.

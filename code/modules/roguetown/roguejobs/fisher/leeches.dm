@@ -182,7 +182,7 @@
 		if(!get_location_accessible(H, check_zone(user.zone_selected)))
 			to_chat(user, span_warning("Something in the way."))
 			return
-		var/used_time = (70 - (user.mind.get_skill_level(/datum/skill/misc/medicine) * 10))/2
+		var/used_time = (70 - (user.get_skill_level(/datum/skill/misc/medicine) * 10))/2
 		if(!do_mob(user, H, used_time))
 			return
 		if(!H)
@@ -298,3 +298,26 @@
 
 /obj/item/natural/worms/leech/attack_right(mob/user)
 	return
+
+/obj/item/natural/worms/leech/abyssoid
+	name = "abyssoid leech"
+	desc = "A holy leech sent by Abyssor himself."
+	icon_state = "leech"
+	drainage = 0
+	blood_sucking = 0
+	embedding = list(
+		"embed_chance" = 100,
+		"embedded_unsafe_removal_time" = 0,
+		"embedded_pain_chance" = 0,
+		"embedded_fall_chance" = 0,
+		"embedded_bloodloss"= 0,
+	)
+
+/obj/item/natural/worms/leech/abyssoid/on_embed_life(mob/living/user, obj/item/bodypart/bodypart)
+	. = ..()
+	if(!user)
+		return
+	if(iscarbon(user))
+		var/mob/living/carbon/V = user
+		if(prob(3))
+			V.say(pick("PRAISE ABYSSOR!", "REMEMBER ABYSSOR!", "ABYSSOR LIVES!", "GLORY TO ABYSSOR!", "ABYSSOR IS COMING!"))

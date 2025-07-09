@@ -41,6 +41,8 @@
 	var/list/allowed_patrons
 	/// Default patron in case the patron is not allowed
 	var/datum/patron/default_patron
+	/// This is our bitflag for storyteller rolling.
+	var/job_bitflag = NONE
 	/// Can select equipment after you spawn in.
 	var/has_loadout = FALSE
 
@@ -71,15 +73,16 @@
 		if(H.dna)
 			if(H.dna.species)
 				if(H.dna.species.name in list("Elf", "Half-Elf"))
-					H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+					H.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 				if(H.dna.species.name in list("Metal Construct"))
-					H.mind.adjust_skillrank(/datum/skill/craft/engineering, 2, TRUE)
+					H.adjust_skillrank(/datum/skill/craft/engineering, 2, TRUE)
 	H.update_body()
 
 /datum/outfit/job/roguetown/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
 	. = ..()
 	if(H.mind)
 		if(H.ckey)
+			H.mind?.job_bitflag = job_bitflag
 			if(check_crownlist(H.ckey))
 				H.mind.special_items["Champion Circlet"] = /obj/item/clothing/head/roguetown/crown/sparrowcrown
 			give_special_items(H)

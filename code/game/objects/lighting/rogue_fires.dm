@@ -221,6 +221,7 @@
 	icon_state = "floorcandle1"
 	base_state = "floorcandle"
 	pixel_y = 0
+	layer = TABLE_LAYER
 	cookonme = FALSE
 
 /obj/machinery/light/rogue/wallfire/candle/floorcandle/alt
@@ -239,6 +240,7 @@
 	name = "sconce"
 	desc = "A wall-mounted fixture that allows a torch to illuminate the area while freeing the hands for other tasks."
 	icon_state = "torchwall1"
+	var/torch_off_state = "torchwall0"
 	base_state = "torchwall"
 	density = FALSE
 	light_outer_range = 5 //same as the held torch, if you put a torch into a sconce, it shouldn't magically become twice as bright, it's inconsistent.
@@ -280,14 +282,13 @@
 	. = ..()
 
 /obj/machinery/light/rogue/torchholder/OnCrafted(dirin, user)
-	if(dirin == NORTH)
-		pixel_y = 32
 	dirin = turn(dirin, 180)
 	QDEL_NULL(torchy)
 	on = FALSE
 	set_light(0)
 	update_icon()
-	. = ..(dirin)
+
+	..(dirin, user)
 
 /obj/machinery/light/rogue/torchholder/process()
 	if(on)
@@ -318,9 +319,9 @@
 		if(on)
 			icon_state = "[base_state]1"
 		else
-			icon_state = "[base_state]0"
+			icon_state = "[torch_off_state]"
 	else
-		icon_state = "torchwall"
+		icon_state = "[base_state]"
 
 /obj/machinery/light/rogue/torchholder/burn_out()
 	if(torchy && torchy.on)
@@ -444,7 +445,7 @@
 		. += span_notice("Right click to start fanning the flame and make it cook faster.")
 
 /obj/machinery/light/rogue/hearth/attack_right(mob/user)
-	var/datum/skill/craft/cooking/cs = user?.mind?.get_skill_level(/datum/skill/craft/cooking)
+	var/datum/skill/craft/cooking/cs = user?.get_skill_level(/datum/skill/craft/cooking)
 	var/cooktime_divisor = get_cooktime_divisor(cs)
 	if(do_after(user, 2 SECONDS / cooktime_divisor, target = src))
 		to_chat(user, span_info("I fan the flame on [src].")) // Until line combine is on by default gotta do this to avoid spam
@@ -453,7 +454,7 @@
 
 /obj/machinery/light/rogue/hearth/attackby(obj/item/W, mob/living/user, params)
 	lastuser = user // For processing food
-	var/datum/skill/craft/cooking/cs = lastuser?.mind?.get_skill_level(/datum/skill/craft/cooking)
+	var/datum/skill/craft/cooking/cs = lastuser?.get_skill_level(/datum/skill/craft/cooking)
 	var/cooktime_divisor = get_cooktime_divisor(cs)
 
 	if(!attachment)
@@ -586,7 +587,7 @@
 
 /obj/machinery/light/rogue/hearth/process()
 	// Edge case is that this depends on the last person to put the pan on the hearth and not the last person to put the food on the pan
-	var/datum/skill/craft/cooking/cs = lastuser?.mind?.get_skill_level(/datum/skill/craft/cooking)
+	var/datum/skill/craft/cooking/cs = lastuser?.get_skill_level(/datum/skill/craft/cooking)
 	var/cooktime_divisor = get_cooktime_divisor(cs)
 
 	if(isopenturf(loc))

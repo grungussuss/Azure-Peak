@@ -225,41 +225,170 @@
 /obj/item/paper/confession
 	name = "confession"
 	icon_state = "confession"
+	var/base_icon_state = "confession"
 	info = "THE GUILTY PARTY ADMITS THEIR SIN AND THE WEAKENING OF PSYDON'S HOLY FLOCK. THEY WILL REPENT AND SUBMIT TO ANY PUNISHMENT THE CLERGY DEEMS APPROPRIATE, OR BE RELEASED IMMEDIATELY. LET THIS RECORD OF THEIR SIN WEIGH ON THE ANGEL GABRIEL'S JUDGEMENT AT THE MANY-SPIKED GATES OF HEAVEN.<br/><br/>SIGNED,"
-	var/signed = FALSE
-	textper = 150
+	var/signed = null
+	var/antag = null // The literal name of the antag, like 'Bandit' or 'worshiper of Zizo'
+	var/bad_type = null // The type of the antag, like 'OUTLAW OF THE THIEF-LORD'
+	textper = 108
+	maxlen = 2000
+	var/confession_type = "antag" //for voluntary confessions
+
+
+/obj/item/paper/confession/examine(mob/user)
+	. = ..()
+	. += span_info("Left click with a feather to sign, right click to change confession type.")
+
+/obj/item/paper/confession/attackby(atom/A, mob/living/user, params)
+	if(signed)
+		return
+	if(istype(A, /obj/item/natural/feather))
+		attempt_confession(user)
+		return TRUE
+	return ..()
 
 /obj/item/paper/confession/update_icon_state()
+	. = ..()
 	if(mailer)
 		icon_state = "paper_prep"
-		name = "letter"
 		throw_range = 7
 		return
-	name = initial(name)
 	throw_range = initial(throw_range)
-	if(signed)
-		icon_state = "confessionsigned"
-		return
-	icon_state = "confession"
+	icon_state = "[base_icon_state][signed ? "signed" : ""]"
+	return
 
-/obj/item/paper/confession/attack(mob/living/carbon/human/M, mob/user)
-	if(signed)
-		return ..()
-	if(!M.get_bleed_rate())
-		to_chat(user, span_warning("No. The sinner must be bleeding."))
+/obj/item/paper/confession/proc/attempt_confession(mob/living/carbon/human/M, mob/user)
+	if(!ishuman(M))
 		return
-	if(!M.stat)
-		to_chat(user, span_info("I courteously offer the confession to [M]."))
-		if(alert(M, "Sign the confession with your blood?", "CONFESSION OF SIN", "Yes", "No") != "Yes")
+	var/input = alert(M, "Sign the confession of your true nature?", "CONFESSION OF [confession_type == "antag" ? "VILLAINY" : "FAITH"]", "Yes", "Lie", "No")
+	if(M.stat >= UNCONSCIOUS)
+		return
+	if(!M.CanReach(src))
+		return
+	if(signed)
+		return
+	if(input == "Yes")
+		playsound(src, 'sound/items/write.ogg', 50, FALSE, ignore_walls = FALSE)
+		M.visible_message(span_info("[M] has agreed to confess their true [confession_type == "antag" ? "villainy" : "faith"]."), span_info("I agree to confess my true nature."), vision_distance = COMBAT_MESSAGE_RANGE)
+		M.confess_sins(confession_type, resist=FALSE, interrogator=user, torture=FALSE, confession_paper = src, false_result = TRUE)
+	else if(input == "Lie")
+		var/fake = TRUE
+		if(confession_type == "patron")
+			var/list/divine_gods = list()
+			for(var/datum/patron/path as anything in GLOB.patrons_by_faith[/datum/faith/divine] + GLOB.patrons_by_faith[/datum/faith/old_god])
+				if(!path.name)
+					continue
+				var/pref_name = path.name ? path.name : path.name
+				divine_gods[pref_name] = path
+			if(length(divine_gods)) // sanity check
+				var/fake_patron = input(M, "Who will you pretend your patron is?", "DECEPTION") as null|anything in divine_gods
+				if(!fake)
+					fake_patron = pick(divine_gods)
+				fake = divine_gods[fake_patron]
+		if(M.stat >= UNCONSCIOUS)
 			return
-		if(M.stat)
+		if(!M.CanReach(src))
 			return
 		if(signed)
 			return
-		if(M.has_flaw(/datum/charflaw/addiction/godfearing))
-			M.add_stress(/datum/stressevent/confessedgood)
-		else
-			M.add_stress(/datum/stressevent/confessed)
-		M.add_stress(/datum/stressevent/confessed)
-		signed = M.real_name
-		info = "THE GUILTY PARTY ADMITS THEIR SIN AND THE WEAKENING OF PSYDON'S HOLY FLOCK. THEY WILL REPENT AND SUBMIT TO ANY PUNISHMENT THE CLERGY DEEMS APPROPRIATE, OR BE RELEASED IMMEDIATELY. LET THIS RECORD OF THEIR SIN WEIGH ON THE ANGEL GABRIEL'S JUDGEMENT AT THE MANY-SPIKED GATES OF HEAVEN.<br/><br/>SIGNED,<br/><font color='red'>[signed]</font>"
+		playsound(src, 'sound/items/write.ogg', 50, FALSE, ignore_walls = FALSE)
+		M.visible_message(span_info("[M] has agreed to confess their true [confession_type == "antag" ? "villainy" : "faith"]."), span_info("I agree to confess my true nature."), vision_distance = COMBAT_MESSAGE_RANGE)
+		M.confess_sins(confession_type, resist=FALSE, interrogator=user, torture=FALSE, confession_paper = src, false_result = fake)
+	else
+		M.visible_message(span_boldwarning("[M] refused to sign the confession!"), span_boldwarning("I refused to sign the confession!"), vision_distance = COMBAT_MESSAGE_RANGE)
+	return
+
+/obj/item/paper/confession/read(mob/user)
+	if(!user.client || !user.hud_used)
+		return
+	if(!user.hud_used.reads)
+		return
+	if(!user.can_read(src))
+		if(info)
+			user.adjust_skillrank(/datum/skill/misc/reading, 2, FALSE)
+		return
+	/*font-size: 125%;*/
+	if(in_range(user, src) || isobserver(user))
+		user.hud_used.reads.icon_state = "scroll"
+		user.hud_used.reads.show()
+		var/dat = {"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
+					<html><head><style type=\"text/css\">
+					body { background-image:url('book.png');background-repeat: repeat; }</style>
+					</head><body scroll=yes>"}
+		dat += "[info]<br>"
+		dat += "<a href='byond://?src=[REF(src)];close=1' style='position:absolute;right:50px'>Close</a>"
+		dat += "</body></html>"
+		user << browse(dat, "window=reading;size=460x300;can_close=0;can_minimize=0;can_maximize=0;can_resize=0;titlebar=0")
+		onclose(user, "reading", src)
+	else
+		return "<span class='warning'>I'm too far away to read it.</span>"
+
+/obj/item/paper/confession/rmb_self(mob/user)
+	return TRUE
+
+/obj/item/paper/confession/attack_right(mob/user)
+	return TRUE
+
+/obj/item/paper/scroll/sell_price_changes
+	name = "updated purchasing prices"
+	icon_state = "contractsigned"
+
+	var/list/sell_prices
+	var/writers_name
+	var/faction
+
+/obj/item/paper/scroll/sell_price_changes/New(loc, list/prices, faction_name)
+	. = ..()
+
+	faction = faction_name
+	if(!faction)
+		faction = pick("Heartfelt", "Hammerhold", "Grenzelhoft", "Kingsfield")		//add more as time goes, idk
+
+	sell_prices = prices
+	if(!length(sell_prices))
+		sell_prices = generated_test_data()
+	writers_name = pick( world.file2list("strings/rt/names/human/humnorm.txt") )
+	rebuild_info()
+
+/obj/item/paper/scroll/sell_price_changes/update_icon_state()
+	if(open)
+		icon_state = "contractsigned"
+		name = initial(name)
+	else
+		icon_state = "scroll_closed"
+		name = "scroll"
+
+
+/obj/item/paper/scroll/sell_price_changes/proc/rebuild_info()
+	info = null
+	info += "<div style='vertical-align:top'>"
+	info += "<h2 style='color:#06080F;font-family:\"Segoe Script\"'>Purchasing Prices</h2>"
+	info += "<hr/>"
+
+	if(sell_prices.len)
+		info += "<ul>"
+		for(var/atom/type_path as anything in sell_prices)
+			var/list/prices = sell_prices[type_path]
+			info += "<li style='color:#06080F;font-size:9px;font-family:\"Segoe Script\"'>[initial(type_path.name)] [prices[1]] > [prices[2]] mammons</li><br/>"
+		info += "</ul>"
+
+	info += "<br/></font>"
+
+	info += "<font size=\"2\" face=\"[FOUNTAIN_PEN_FONT]\" color=#27293f>[writers_name] Shipwright of [faction]</font>"
+
+	info += "</div>"
+
+/obj/item/paper/scroll/sell_price_changes/proc/generated_test_data()
+
+	var/list/prices = list()
+	for(var/i = 1 to rand(2, 4))
+		var/datum/supply_pack/pack = pick(SSmerchant.supply_packs)
+		if(islist(pack.contains))
+			continue
+		var/path = pack.contains
+		if(!path)
+			continue
+		prices |= path
+		var/starting_rand  = rand(100, 50)
+		prices[path] = list("[starting_rand]", "[round(starting_rand * 0.5, 1)]")
+	sell_prices = prices

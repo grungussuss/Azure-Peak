@@ -35,6 +35,9 @@
 	swingdelay = 0
 	item_d_type = "stab"
 
+/datum/intent/sword/thrust/krieg
+	damfactor = 0.9
+
 /datum/intent/sword/strike
 	name = "pommel strike"
 	icon_state = "instrike"
@@ -84,6 +87,15 @@
 
 /datum/intent/sword/chop/falx
 	penfactor = 40
+
+/datum/intent/sword/cut/krieg
+	clickcd = 10
+
+/datum/intent/sword/thrust/krieg
+	damfactor = 0.8
+
+/datum/intent/rend/krieg
+	intent_intdamage_factor = 0.2
 
 //sword objs ฅ^•ﻌ•^ฅ
 
@@ -174,7 +186,7 @@
 			if("gen")
 				return list("shrink" = 0.6,"sx" = -10,"sy" = -8,"nx" = 13,"ny" = -8,"wx" = -8,"wy" = -7,"ex" = 7,"ey" = -8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 90,"sturn" = -90,"wturn" = -80,"eturn" = 81,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
 			if("wielded")
-				return list("shrink" = 0.6,"sx" = 3,"sy" = 4,"nx" = -1,"ny" = 4,"wx" = -8,"wy" = 3,"ex" = 7,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 15,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0)
+				return list("shrink" = 0.7,"sx" = 5,"sy" = -4,"nx" = -6,"ny" = 2,"wx" = -8,"wy" = 1,"ex" = 7,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -30,"sturn" = 45,"wturn" = -30,"eturn" = 30,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0)
 			if("onbelt")
 				return list("shrink" = 0.5,"sx" = -4,"sy" = -6,"nx" = 5,"ny" = -6,"wx" = 0,"wy" = -6,"ex" = -1,"ey" = -6,"nturn" = 100,"sturn" = 156,"wturn" = 90,"eturn" = 180,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 
@@ -256,6 +268,11 @@
 			if("onbelt") return list("shrink" = 0.4, "sx" = -4, "sy" = -6, "nx" = 5, "ny" = -6, "wx" = 0, "wy" = -6, "ex" = -1, "ey" = -6, "nturn" = 100, "sturn" = 156, "wturn" = 90, "eturn" = 180, "nflip" = 0, "sflip" = 0, "wflip" = 0, "eflip" = 0, "northabove" = 0, "southabove" = 1, "eastabove" = 1, "westabove" = 0)
 			if("altgrip") return list("shrink" = 0.6,"sx" = 2,"sy" = 3,"nx" = -7,"ny" = 1,"wx" = -8,"wy" = 0,"ex" = 8,"ey" = -1,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -135,"sturn" = -35,"wturn" = 45,"eturn" = 145,"nflip" = 8,"sflip" = 8,"wflip" = 1,"eflip" = 0)
 
+/obj/item/rogueweapon/sword/long/etruscan
+	name = "basket-hilted longsword"
+	desc = "An uncommon and elaborate type of longsword with a compound hilt like those seen on rapiers and smallswords. It has a marked unsharpened section for safe unarmored half-swording, and it's made of Calorian steel."
+	icon_state = "elongsword"
+
 /obj/item/rogueweapon/sword/long/malumflamm
 	name = "forgefiend flamberge"
 	desc = "This sword's creation took a riddle in its own making. A great sacrifice was made for a blade of perfect quality."
@@ -321,16 +338,13 @@
 /obj/item/rogueweapon/sword/long/judgement
 	name = "\"Judgement\""
 	desc = "An intricately forged longsword, it's blade is made from Aavnr's finest Vyšvou steel - held from an ornate carved ivory grip from the region's \"Mamük\" megafauna. A sight that's truly unique."
-	force = 40
-	force_wielded = 55
-	possible_item_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike)
-	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike, /datum/intent/sword/chop)
 	icon_state = "judgement"
 	icon = 'icons/roguetown/weapons/64.dmi'
 	item_state = "judgement"
 	lefthand_file = 'icons/mob/inhands/weapons/roguebig_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/roguebig_righthand.dmi'
 	swingsound = BLADEWOOSH_LARGE
+	wbalance = WBALANCE_HEAVY
 	pickup_sound = 'sound/foley/equip/swordlarge2.ogg'
 	bigboy = 1
 	wlength = WLENGTH_LONG
@@ -441,7 +455,7 @@
 	desc = "A curved one-handed longsword. This type of scimitar is the quintessential armament of Ranesheni horsemen, its name derived from Sama'glos for \"Tiger's claw\"."
 	force = 24
 	wdefense = 6	//Has chop mode, so slightly less defense. Slightly.
-	wbalance = 1
+	wbalance = WBALANCE_SWIFT
 	icon_state = "tabi"
 	icon = 'icons/roguetown/weapons/64.dmi'
 	possible_item_intents = list(/datum/intent/sword/cut/sabre, /datum/intent/sword/thrust, /datum/intent/sword/peel, /datum/intent/sword/chop)
@@ -515,14 +529,15 @@
 	name = "executioners sword"
 	desc = "A longsword with extra heft to its blade, reinforced."
 	possible_item_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/peel, /datum/intent/sword/strike)
-	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike, /datum/intent/axe/chop)
+	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust/exe, /datum/intent/rend, /datum/intent/axe/chop)
 	icon_state = "exe"
 	minstr = 12
 	slot_flags = ITEM_SLOT_BACK //Too big for hip
 
 /datum/intent/sword/thrust/exe
 	swingdelay = 4	//Slight delay to stab; big and heavy.
-	penfactor = 30	//Slightly better pen than base longsword, which is 20. It's a heavy blade so.
+	penfactor = BLUNT_DEFAULT_PENFACTOR //Flat tip? I don't know, man. This intent is won't penetrate anything but it damages armor more.
+	intent_intdamage_factor = 1.3 //This is basically like getting hit by a mace.
 
 /obj/item/rogueweapon/sword/long/exe/astrata
 	name = "\"Solar Judge\""
@@ -555,6 +570,11 @@
 	user.visible_message(span_warning("[user] wipes [src] down with its cloth."),span_notice("I wipe [src] down with its cloth."))
 	return
 
+/obj/item/rogueweapon/sword/long/oldpsysword
+	name = "old psydonian longsword"
+	desc = "A finely made longsword, plated in a worn-down veneer of grubby silver. It's long seen better daes."
+	icon_state = "psysword"
+
 /obj/item/rogueweapon/sword/long/psysword
 	name = "psydonian longsword"
 	desc = "A finely made longsword, plated in a ceremonial veneer of ornate silver - made for felling men and monsters alike.\
@@ -564,6 +584,7 @@
 /obj/item/rogueweapon/sword/long/psysword/ComponentInitialize()
 	. = ..()							//+3 force, +100 blade int, +50 int, +1 def, make silver
 	AddComponent(/datum/component/psyblessed, FALSE, 3, 100, 50, 1, TRUE)
+	
 
 /obj/item/rogueweapon/sword/iron
 	name = "iron arming sword"
@@ -645,6 +666,14 @@
 	minstr = 4
 	wdefense = 2
 
+/obj/item/rogueweapon/sword/iron/messer/virtue
+	name = "dueling messer"
+	desc = "A basic single-edge iron hunting sword that has been modified for the express purpose of dueling, with an added guard and a leaner grip for comfort and speed."
+	icon_state = "dmesser"
+	swingsound = BLADEWOOSH_SMALL
+	wdefense = 3
+	wbalance = WBALANCE_SWIFT
+
 // This typepath is so fucked bruh but I am not repeating code and not dropping a massive merge conflict for now
 /obj/item/rogueweapon/sword/iron/messer/copper 
 	name = "copper messer"
@@ -665,6 +694,7 @@
 	possible_item_intents = list(/datum/intent/sword/cut/sabre, /datum/intent/sword/thrust, /datum/intent/axe/chop, /datum/intent/sword/peel)
 	gripped_intents = null
 	minstr = 5
+	wdefense = 4
 
 /obj/item/rogueweapon/sword/sabre
 	name = "sabre"
@@ -676,7 +706,7 @@
 	swingsound = BLADEWOOSH_SMALL
 	minstr = 5
 	wdefense = 7		//Same as rapier
-	wbalance = 1
+	wbalance = WBALANCE_SWIFT
 
 /datum/intent/sword/cut/sabre
 	clickcd = 8		//Faster than sword by 4
@@ -752,7 +782,7 @@
 	swingsound = BLADEWOOSH_SMALL
 	minstr = 6
 	wdefense = 7
-	wbalance = 1
+	wbalance = WBALANCE_SWIFT
 
 /obj/item/rogueweapon/sword/rapier/vaquero
 	name = "cup-hilt rapier"
@@ -882,7 +912,7 @@
 	possible_item_intents = list(/datum/intent/sword/cut, /datum/intent/sword/chop, /datum/intent/sword/peel)
 	gripped_intents = null
 	wdefense = 6
-	wbalance = 1
+	wbalance = WBALANCE_SWIFT
 	
 
 /obj/item/rogueweapon/sword/silver
@@ -1123,8 +1153,6 @@
 	name = "Oathkeeper"
 	desc = "An ornate golden longsword with a ruby embedded in the hilt, given to the Knight Commander for their valiant service to the crown."
 	sellprice = 140
-	force = 26
-	force_wielded = 35
 	possible_item_intents = list(/datum/intent/sword/cut/sabre, /datum/intent/sword/thrust, /datum/intent/sword/strike)
 	icon_state = "kingslayer"
 
@@ -1246,3 +1274,44 @@
 				"eastabove" = 1,
 				"westabove" = 0,
 				)
+
+/obj/item/rogueweapon/sword/long/kriegmesser
+	name = "kriegsmesser"
+	desc = "A large two-handed sword with a single-edged blade, a crossguard and a knife-like hilt. \
+	It is meant to be wielded with both hands and is a popular weapon amongst Grenzelhoftian mercenaries."
+	icon = 'icons/roguetown/weapons/swords64.dmi'
+	icon_state = "kriegmesser"
+	possible_item_intents = list(/datum/intent/sword/cut/krieg, /datum/intent/sword/chop/falx, /datum/intent/rend/krieg, /datum/intent/sword/strike)
+	gripped_intents = list(/datum/intent/sword/cut/krieg, /datum/intent/sword/thrust/krieg, /datum/intent/rend/krieg, /datum/intent/sword/strike)
+	alt_intents = null // Can't mordhau this
+	smeltresult = /obj/item/ingot/steel
+
+/obj/item/rogueweapon/sword/long/dec
+	name = "decorated longsword"
+	desc = "A valuable ornate longsword made for the purpose of ceremonial fashion, with a fine leather grip and a carefully engraved golden crossguard. \
+	Its blade bears twin inscriptions on either side. One reads, \"THY KINGDOM COME\" while the obverse reads, \"THY WILL BE DONE\"."
+	icon_state = "declongsword"
+	sellprice = 140
+
+// kazengite content
+
+/obj/item/rogueweapon/sword/sabre/mulyeog
+	force = 25
+	name = "foreign straight sword"
+	desc = "A foreign sword used by cut-throats & thugs. There's a red tassel on the hilt."
+	icon_state = "eastsword1"
+	smeltresult = /obj/item/ingot/steel
+	wdefense = 3
+
+/obj/item/rogueweapon/sword/sabre/mulyeog/rumahench
+	name = "lenticular straight sword"
+	desc = "A steel sword with cloud patterns on the groove."
+	icon_state = "eastsword2"
+
+/obj/item/rogueweapon/sword/sabre/mulyeog/rumacaptain
+	force = 30
+	name = "Heiyundao"
+	desc = "A gold-stained with cloud patterns on the groove. One of a kind."
+	icon_state = "eastsword3"
+	max_integrity = 180
+	wdefense = 4

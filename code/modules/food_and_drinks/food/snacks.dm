@@ -78,8 +78,6 @@ All foods are distributed among various categories. Use common sense.
 	var/rotprocess = FALSE
 	var/become_rot_type = null
 
-	var/plateable = FALSE //if it can be plated or not
-
 	var/fertamount = 50
 
 	drop_sound = 'sound/foley/dropsound/food_drop.ogg'
@@ -156,6 +154,7 @@ All foods are distributed among various categories. Use common sense.
 			qdel(src)
 			if(!location || !SEND_SIGNAL(location, COMSIG_TRY_STORAGE_INSERT, NU, null, TRUE, TRUE))
 				NU.forceMove(get_turf(NU.loc))
+			GLOB.azure_round_stats[STATS_FOOD_ROTTED]++
 			return TRUE
 	else
 		color = "#6c6897"
@@ -168,6 +167,7 @@ All foods are distributed among various categories. Use common sense.
 		cooktime = 0
 		if(istype(src.loc, /obj/item/cooking/platter/))
 			src.loc.update_icon()
+		GLOB.azure_round_stats[STATS_FOOD_ROTTED]++
 		return TRUE
 
 
@@ -299,6 +299,8 @@ All foods are distributed among various categories. Use common sense.
 	eater.taste(reagents)
 
 	if(!reagents.total_volume)
+		if(eat_effect == /datum/status_effect/debuff/rotfood)
+			SEND_SIGNAL(eater, COMSIG_ROTTEN_FOOD_EATEN, src)
 		var/mob/living/location = loc
 		var/obj/item/trash_item = generate_trash(location)
 		qdel(src)
@@ -347,11 +349,11 @@ All foods are distributed among various categories. Use common sense.
 				if(0 to NUTRITION_LEVEL_STARVING)
 					user.visible_message(span_notice("[user] hungrily [eatverb]s \the [src], gobbling it down!"), span_notice("I hungrily [eatverb] \the [src], gobbling it down!"))
 					M.changeNext_move(CLICK_CD_MELEE * 0.5)
-/*			if(M.rogstam <= 50)
+/*			if(M.energy <= 50)
 				user.visible_message(span_notice("[user] hungrily [eatverb]s \the [src], gobbling it down!"), span_notice("I hungrily [eatverb] \the [src], gobbling it down!"))
-			else if(M.rogstam > 50 && M.rogstam < 500)
+			else if(M.energy > 50 && M.energy < 500)
 				user.visible_message(span_notice("[user] hungrily [eatverb]s \the [src]."), span_notice("I hungrily [eatverb] \the [src]."))
-			else if(M.rogstam > 500 && M.rogstam < 1000)
+			else if(M.energy > 500 && M.energy < 1000)
 				user.visible_message(span_notice("[user] [eatverb]s \the [src]."), span_notice("I [eatverb] \the [src]."))
 			if(HAS_TRAIT(M, TRAIT_VORACIOUS))
 			M.changeNext_move(CLICK_CD_MELEE * 0.5) nom nom nom*/

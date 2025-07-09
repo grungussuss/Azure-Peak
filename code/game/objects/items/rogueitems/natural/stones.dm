@@ -85,7 +85,6 @@ GLOBAL_LIST_INIT(stone_personalities, list(
 	"Barbarics",
 	"Fanciness",
 	"Relaxing",	
-	"Blacked",
 	"Greed",
 	"Evil",
 	"Good",
@@ -309,7 +308,7 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 
 /obj/item/natural/stone/attackby(obj/item/W, mob/living/user, params)
 	user.changeNext_move(CLICK_CD_MELEE)
-	var/skill_level = user.mind.get_skill_level(/datum/skill/craft/masonry)
+	var/skill_level = user.get_skill_level(/datum/skill/craft/masonry)
 	var/work_time = (35 - (skill_level * 5))
 	if(istype(W, /obj/item/natural/stone))
 		playsound(src.loc, pick('sound/items/stonestone.ogg'), 100)
@@ -336,14 +335,19 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 //rock munching
 /obj/item/natural/stone/attack(mob/living/M, mob/user)
 	testing("attack")
-	if(M.construct)
-		var/healydoodle = magic_power+1
-		M.apply_status_effect(/datum/status_effect/buff/rockmuncher, healydoodle)
-		qdel(src)
-		if(M == user)
-			user.visible_message(span_notice("[user] presses the stone to [user]'s body, and it is absorbed."), span_notice("I absorb the stone."))
-		else
-			user.visible_message(span_notice("[user] presses the stone to [M]'s body, and it is absorbed."), span_notice("I press the stone to [M], and it is absorbed."))
+	if(!user.cmode)
+		if(M.construct)
+			var/healydoodle = magic_power+1
+			M.apply_status_effect(/datum/status_effect/buff/rockmuncher, healydoodle)
+			qdel(src)
+			if(M == user)
+				user.visible_message(span_notice("[user] presses the stone to [user]'s body, and it is absorbed."), span_notice("I absorb the stone."))
+			else
+				user.visible_message(span_notice("[user] presses the stone to [M]'s body, and it is absorbed."), span_notice("I press the stone to [M], and it is absorbed."))
+		else // if theyre not a construct, but we're not in cmode, beat them 2 death with rocks.
+			return ..()
+	else // if we're in cmode, beat them to death with rocks.
+		return ..()
 
 /obj/item/natural/rock
 	name = "rock"
@@ -379,14 +383,24 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 			L.consider_ambush(always = TRUE)
 	..()
 
+/obj/item/natural/rock/attacked_by(obj/item/I, mob/living/user)
+	var/was_destroyed = obj_destroyed
+	. = ..()
+	if(.)
+		if(!was_destroyed && obj_destroyed)
+			record_featured_stat(FEATURED_STATS_MINERS, user)
+
 /obj/item/natural/rock/deconstruct(disassembled = FALSE)
 	if(!disassembled)
 		if(mineralType && mineralAmt)
+			if(has_world_trait(/datum/world_trait/malum_diligence))
+				mineralAmt += rand(1,2)
 			new mineralType(src.loc, mineralAmt)
 		for(var/i in 1 to rand(1,4))
 			var/obj/item/S = new /obj/item/natural/stone(src.loc)
 			S.pixel_x = rand(25,-25)
 			S.pixel_y = rand(25,-25)
+		GLOB.azure_round_stats[STATS_ROCKS_MINED]++
 	qdel(src)
 
 /obj/item/natural/rock/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
@@ -401,7 +415,7 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 
 /obj/item/natural/rock/attackby(obj/item/W, mob/living/user, params)
 	user.changeNext_move(CLICK_CD_MELEE)
-	var/skill_level = user.mind.get_skill_level(/datum/skill/craft/masonry)
+	var/skill_level = user.get_skill_level(/datum/skill/craft/masonry)
 	var/work_time = (120 - (skill_level * 15))
 	if(istype(W, /obj/item/natural/stone))
 		user.visible_message(span_info("[user] strikes the stone against the rock."))

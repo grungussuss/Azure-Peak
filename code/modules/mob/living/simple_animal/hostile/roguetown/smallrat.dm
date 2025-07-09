@@ -50,7 +50,6 @@
 	eat_effect = null
 	rotprocess = 15 MINUTES
 	sellprice = 0
-	plateable = TRUE
 
 /obj/item/reagent_containers/food/snacks/smallrat/burning(input as num)
 	if(!dead)
@@ -88,7 +87,7 @@
 		var/mob/living/L = user
 		if(!(L.mobility_flags & MOBILITY_PICKUP))
 			return
-	user.changeNext_move(CLICK_CD_MELEE)
+	user.changeNext_move(CLICK_CD_INTENTCAP)
 	if(dead)
 		..()
 	else

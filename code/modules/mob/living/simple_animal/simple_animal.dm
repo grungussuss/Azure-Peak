@@ -139,7 +139,7 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 	var/dextrous = FALSE
 	var/dextrous_hud_type = /datum/hud/dextrous
 
-	///The Status of our AI, can be set to AI_ON (On, usual processing), AI_IDLE (Will not process, but will return to AI_ON if an enemy comes near), AI_OFF (Off, Not processing ever), AI_Z_OFF (Temporarily off due to nonpresence of players).
+	///The Status of our AI, can be set to AI_ON (On, usual processing), AI_IDLE (Will not process, but will return to AI_ON if an enemy comes near), NPC_AI_OFF (Off, Not processing ever), AI_Z_OFF (Temporarily off due to nonpresence of players).
 	var/AIStatus = AI_ON
 	///once we have become sentient, we can never go back.
 	var/can_have_ai = TRUE
@@ -238,6 +238,7 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 	stop_automated_movement_when_pulled = TRUE
 	if(user)
 		owner = user
+		SEND_SIGNAL(user, COMSIG_ANIMAL_TAMED, src)
 	return
 
 //mob/living/simple_animal/examine(mob/user)
@@ -266,6 +267,8 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 		retreating = null
 		retreat_distance = initial(retreat_distance)
 		minimum_distance = initial(minimum_distance)
+	if(HAS_TRAIT(src, TRAIT_RIGIDMOVEMENT))
+		return
 	if(HAS_TRAIT(src, TRAIT_IGNOREDAMAGESLOWDOWN))
 		move_to_delay = initial(move_to_delay)
 		return
@@ -399,7 +402,7 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 				else
 					visible_message("[user] begins to butcher [src]...")
 				if(user.mind)
-					used_time -= (user.mind.get_skill_level(/datum/skill/labor/butchering) * 30)
+					used_time -= (user.get_skill_level(/datum/skill/labor/butchering) * 30)
 				playsound(src, 'sound/foley/gross.ogg', 100, FALSE)
 				if(do_after(user, used_time, target = src))
 					butcher(user)
@@ -417,54 +420,45 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 	if(ssaddle)
 		ssaddle.forceMove(get_turf(src))
 		ssaddle = null
-	if(butcher_results || guaranteed_butcher_results)
-		var/list/butcher = list()
-
-		if(butcher_results)
-			if(user.mind.get_skill_level(/datum/skill/labor/butchering) == 0)
-				if(prob(70))
-					butcher = botched_butcher_results // high chance to get shit result
-				else
-					butcher = butcher_results
-			if(user.mind.get_skill_level(/datum/skill/labor/butchering) == 1)
-				if(prob(50))
-					butcher = botched_butcher_results // chance to get shit result
-				else
-					butcher = butcher_results
-			if(user.mind.get_skill_level(/datum/skill/labor/butchering) == 2)
-				if(prob(30))
-					butcher = botched_butcher_results // lower chance to get shit result
-				else
-					butcher = butcher_results
-			if(user.mind.get_skill_level(/datum/skill/labor/butchering) == 3)
-				if(prob(10))
-					butcher = perfect_butcher_results // small chance to get great result
-				else
-					butcher = butcher_results
-			if(user.mind.get_skill_level(/datum/skill/labor/butchering) == 4)
-				if(prob(50))
-					butcher = perfect_butcher_results // decent chance to get great result
-				else
-					butcher = butcher_results
-			else
-				if(user.mind.get_skill_level(/datum/skill/labor/butchering) == 5)
-					butcher = perfect_butcher_results // only get the best results
-				else
-					butcher = butcher_results		// fallback incase skill doesn't get called
-
-		var/rotstuff = FALSE
-		var/datum/component/rot/simple/CR = GetComponent(/datum/component/rot/simple)
-		if(CR)
-			if(CR.amount >= 10 MINUTES)
-				rotstuff = TRUE
-		var/atom/Tsec = drop_location()
-		for(var/path in butcher)
-			for(var/i in 1 to butcher[path])
-				var/obj/item/I = new path(Tsec)
-				I.add_mob_blood(src)
-				if(rotstuff && istype(I,/obj/item/reagent_containers/food/snacks))
-					var/obj/item/reagent_containers/food/snacks/F = I
-					F.become_rotten()
+	var/list/butcher = list()
+	var/butchery_skill_level = user.get_skill_level(/datum/skill/labor/butchering)
+	var/botch_chance = 0
+	if(length(botched_butcher_results) && butchery_skill_level < SKILL_LEVEL_JOURNEYMAN)
+		botch_chance = 70 - (20 * butchery_skill_level) // 70% at unskilled, 20% lower for each level above it, 0% at journeyman or higher
+	var/perfect_chance = 0
+	if(length(perfect_butcher_results))
+		switch(butchery_skill_level)
+			if(SKILL_LEVEL_NONE to SKILL_LEVEL_APPRENTICE)
+				perfect_chance = 0
+			if(SKILL_LEVEL_JOURNEYMAN)
+				perfect_chance = 10
+			if(SKILL_LEVEL_EXPERT)
+				perfect_chance = 50
+			if(SKILL_LEVEL_MASTER to INFINITY)
+				perfect_chance = 100
+	butcher = butcher_results
+	if(prob(botch_chance))
+		butcher = botched_butcher_results
+		to_chat(user, "<span class='smallred'>I BOTCHED THE BUTCHERY! ([botch_chance]%!)</span>")
+	else if(prob(perfect_chance))
+		butcher = perfect_butcher_results
+		to_chat(user,"<span class='smallgreen'>My butchering was perfect! ([perfect_chance]%!)</span>")
+	if(guaranteed_butcher_results)
+		butcher += guaranteed_butcher_results
+	
+	var/rotstuff = FALSE
+	var/datum/component/rot/simple/CR = GetComponent(/datum/component/rot/simple)
+	if(CR)
+		if(CR.amount >= 10 MINUTES)
+			rotstuff = TRUE
+	var/atom/Tsec = drop_location()
+	for(var/path in butcher)
+		for(var/i in 1 to butcher[path])
+			var/obj/item/I = new path(Tsec)
+			I.add_mob_blood(src)
+			if(rotstuff && istype(I,/obj/item/reagent_containers/food/snacks))
+				var/obj/item/reagent_containers/food/snacks/F = I
+				F.become_rotten()
 	gib()
 
 /mob/living/simple_animal/spawn_dust(just_ash = FALSE)
@@ -541,9 +535,9 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 
 /mob/living/simple_animal/handle_fire()
 	. = ..()
-	if(fire_stacks > 0)
+	if(fire_stacks + divine_fire_stacks > 0)
 		apply_damage(5, BURN)
-		if(fire_stacks > 5)
+		if(fire_stacks + divine_fire_stacks > 5)
 			apply_damage(10, BURN)
 
 //mob/living/simple_animal/IgniteMob()
@@ -752,7 +746,7 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 		return
 	var/time2mount = 12
 	if(M.mind)
-		var/amt = M.mind.get_skill_level(/datum/skill/misc/riding)
+		var/amt = M.get_skill_level(/datum/skill/misc/riding)
 		if(amt)
 			if(amt > 3)
 				time2mount = 0
@@ -776,7 +770,7 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 		var/time2mount = 12
 		riding_datum.vehicle_move_delay = move_to_delay
 		if(M.mind)
-			var/amt = M.mind.get_skill_level(/datum/skill/misc/riding)
+			var/amt = M.get_skill_level(/datum/skill/misc/riding)
 			if(amt)
 				if(amt > 3)
 					time2mount = 0
@@ -825,7 +819,7 @@ GLOBAL_VAR_INIT(farm_animals, FALSE)
 					else
 						do_footstep = FALSE
 			if(user.mind)
-				var/amt = user.mind.get_skill_level(/datum/skill/misc/riding)
+				var/amt = user.get_skill_level(/datum/skill/misc/riding)
 				if(amt)
 					riding_datum.vehicle_move_delay -= 5 + amt/6
 				else

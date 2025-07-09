@@ -62,7 +62,7 @@
 				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 
 /obj/item/fishingrod/afterattack(obj/target, mob/user, proximity)
-	var/sl = user.mind.get_skill_level(/datum/skill/labor/fishing) // User's skill level
+	var/sl = user.get_skill_level(/datum/skill/labor/fishing) // User's skill level
 	var/ft = 120 //Time to get a catch, in ticks
 	var/fpp =  100 - (40 + (sl * 10)) // Fishing power penalty based on fishing skill level
 	var/frwt = list(/turf/open/water/river, /turf/open/water/cleanshallow, /turf/open/water/pond)
@@ -86,6 +86,10 @@
 					if(baited)
 						var/bp = baited.baitpenalty // Penalty to fishing chance based on how good bait is. Lower is better.
 						var/fishchance = 100 // Total fishing chance, deductions applied below
+						if(has_world_trait(/datum/world_trait/fishing_decrease))
+							fishchance -= 25
+						if(has_world_trait(/datum/world_trait/fishing_increase))
+							fishchance += 40
 						if(user.mind)
 							if(!sl) // If we have zero fishing skill...
 								fishchance -= 50 // 50% chance to fish base
@@ -167,6 +171,8 @@
 										new A(user.loc)
 										to_chat(user, "<span class='warning'>Reel 'em in!</span>")
 										user.mind.add_sleep_experience(/datum/skill/labor/fishing, round(fisherman.STAINT, 2), FALSE) // Level up!
+										record_featured_stat(FEATURED_STATS_FISHERS, fisherman)
+										GLOB.azure_round_stats[STATS_FISH_CAUGHT]++
 									playsound(src.loc, 'sound/items/Fish_out.ogg', 100, TRUE)
 									if(prob(80 - (sl * 10))) // Higher skill levels make you less likely to lose your bait
 										to_chat(user, "<span class='warning'>Damn, it ate my bait.</span>")

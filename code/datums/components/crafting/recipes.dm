@@ -4,7 +4,7 @@
 	var/name = "" //in-game display name
 	var/reqs[] = list() //type paths of items consumed associated with how many are needed
 	var/blacklist[] = list() //type paths of items explicitly not allowed as an ingredient
-	var/result //type path of item resulting from this craft
+	var/result[] = list() //type path of item resulting from this craft
 	/// String defines of items needed but not consumed. Lazy list.
 	var/list/tool_behaviors
 	var/tools[] = list() //type paths of items needed but not consumed
@@ -46,44 +46,26 @@
 	if(!istype(client))
 		client = user.client
 	user << browse_rsc('html/book.png')
+	var/uncrafted_sellprice = 0
+	if(islist(result))
+		var/list/result_list = result
+		if(result_list.len)
+			if(istype(/atom/movable, result[1]))
+				var/atom/movable/AM = result[1]
+				if(AM.sellprice)
+					uncrafted_sellprice = AM.sellprice
+	else if(istype(result, /atom/movable))
+		var/atom/movable/AM = result
+		if(AM.sellprice)
+			uncrafted_sellprice = AM.sellprice
+
+	var/final_sellprice = sellprice || uncrafted_sellprice
 	var/html = {"
 		<!DOCTYPE html>
 		<html lang="en">
 		<meta charset='UTF-8'>
 		<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'/>
 		<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-
-		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Charm:wght@700&display=swap');
-			body {
-				font-family: "Charm", cursive;
-				font-size: 1em;
-				text-align: center;
-				margin: 20px;
-				background-color: #f4efe6;
-				color: #3e2723;
-				background-color: rgb(31, 20, 24);
-				background:
-					url('book.png');
-				background-repeat: no-repeat;
-				background-attachment: fixed;
-				background-size: 100% 100%;
-
-			}
-			h1 {
-				text-align: center;
-				font-size: 1.5em;
-				border-bottom: 2px solid #3e2723;
-				padding-bottom: 10px;
-				margin-bottom: 20px;
-			}
-			.icon {
-				width: 96px;
-				height: 96px;
-				vertical-align: middle;
-				margin-right: 10px;
-			}
-		</style>
 		<body>
 		  <div>
 		    <h1>[name]</h1>
@@ -106,9 +88,9 @@
 		else if(ispath(path, /obj)) // Prevent a runtime from happening w/ datum atm until it is
 			var/atom/atom = path
 			if(subtype_reqs)
-				html += "[icon2html(new atom, user)] [count] of any [initial(atom.name)]<br>"
+				html += "- [count] of any [initial(atom.name)]<br>"
 			else
-				html += "[icon2html(new atom, user)] [count] [initial(atom.name)]<br>"
+				html += "- [count] [initial(atom.name)]<br>"
 
 	html += {"
 		</div>
@@ -155,6 +137,11 @@
 	if(wallcraft)
 		html += "<strong class=class='scroll'>start the process next to a wall</strong> <br>"
 
+	if(final_sellprice)
+		html += "<strong class=class='scroll'>You can sell this for [final_sellprice] mammons at a normal quality</strong> <br>"
+	else(
+		html += "<strong class=class='scroll'>This is worthless for export</strong> <br>"
+	)
 
 	html += {"
 		</div>

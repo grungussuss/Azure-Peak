@@ -72,7 +72,6 @@
 	can_saddle = TRUE
 	aggressive = 1
 	remains_type = /obj/effect/decal/remains/saiga
-	
 
 /mob/living/simple_animal/hostile/retaliate/rogue/saiga/saigakid
 	name = "saiga calf"
@@ -178,7 +177,7 @@
 
 /mob/living/simple_animal/hostile/retaliate/rogue/saiga/find_food()
 	..()
-	var/obj/structure/spacevine/SV = locate(/obj/structure/spacevine) in loc
+	var/obj/structure/vine/SV = locate(/obj/structure/vine) in loc
 	if(SV)
 		SV.eat(src)
 		food = max(food + 30, 100)
@@ -210,6 +209,8 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/saiga/death()
 	unbuckle_all_mobs()
 	. = ..()
+	if(!QDELETED(src))
+		src.AddComponent(/datum/component/deadite_animal_reanimation)
 
 /// If we're a mount and are hit while sprinting, throw our rider off
 /// Also called if the rider is hit

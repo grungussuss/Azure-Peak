@@ -71,7 +71,7 @@
 
 // TBD - Cauldron Recipes
 /obj/item/recipe_book/alchemy
-	name = "The Great Work: Secrets of Transmutation"
+	name = "Secrets of Alchemy"
 	icon_state = "book3_0"
 	base_icon_state = "book3"
 
@@ -81,5 +81,17 @@
 		/datum/crafting_recipe/roguetown/survival/mortar,
 		/datum/crafting_recipe/roguetown/survival/pestle,
 		/datum/crafting_recipe/roguetown/alchemy,
+		/datum/alch_grind_recipe,
+		/datum/alch_cauldron_recipe
 		)
  
+/obj/item/recipe_book/cooking
+	name = "The Culinary Codex"
+	desc = "A book full of recipes and tips for cooking. This version looks very incomplete, and only contain brewing recipes. Perhaps it will be filled in later?"
+	icon_state = "book2_0"
+	base_icon_state = "book2"
+
+	types = list(
+		/datum/brewing_recipe,
+		/datum/book_entry/brewing
+	)

@@ -88,6 +88,8 @@
 		. += user.get_item_by_slot(slot)
 
 /obj/item/proc/can_craft_with()
+	if(craft_blocked)
+		return FALSE
 	return TRUE
 
 /datum/component/personal_crafting/proc/get_surroundings(mob/user)
@@ -144,8 +146,11 @@
 			return FALSE
 	return TRUE
 
-/atom/proc/OnCrafted(dirin, user)
+/atom/proc/OnCrafted(dirin, mob/user)
+	SEND_SIGNAL(user, COMSIG_ITEM_CRAFTED, user, type)
 	dir = dirin
+	record_featured_stat(FEATURED_STATS_CRAFTERS, user)
+	record_featured_object_stat(FEATURED_STATS_CRAFTED_ITEMS, name)
 	return
 
 /obj/item/OnCrafted(dirin)
@@ -235,7 +240,7 @@
 						prob2craft -= (25*R.craftdiff)
 					if(R.skillcraft)
 						if(user.mind)
-							prob2craft += (user.mind.get_skill_level(R.skillcraft) * 25)
+							prob2craft += (user.get_skill_level(R.skillcraft) * 25)
 					else
 						prob2craft = 100
 					if(isliving(user))
