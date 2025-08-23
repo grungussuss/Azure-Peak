@@ -18,8 +18,9 @@ decreases charge time if held opened in hand, for pure mage build + aesthetics.
 	drop_sound = 'sound/foley/dropsound/book_drop.ogg'
 	force = 5
 	associated_skill = /datum/skill/misc/reading
+	possible_item_intents = list(/datum/intent/use, /datum/intent/special/magicarc)
 	name = "\improper tome of the arcyne"
-	desc = "A crackling, glowing book, filled with runes and symbols that hurt the mind to stare at."
+	desc = "A crackling, glowing book, filled with runes and symbols that hurt the mind to stare at. Can be used to unbind spells, or to assist the caster in arcing some of their projectiles."
 	var/picked // if the book has had it's style picked or not
 	var/born_of_rock = FALSE // was a magical stone used to make it instead of a gem
 
@@ -306,36 +307,3 @@ decreases charge time if held opened in hand, for pure mage build + aesthetics.
 			return ..()
 	else
 		return ..()
-
-// Leaving this in for now for aesthetics, but they're now useless
-/obj/effect/roguerune/
-	name = "arcyne rune"
-	desc = "Strange symbols pulse upon the ground..."
-	anchored = TRUE
-	icon = 'icons/obj/rune.dmi'
-	icon_state = "6"
-	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	layer = SIGIL_LAYER
-	color = "#3A0B61"
-
-/obj/effect/roguerunelarge/
-	name = "arcyne rune"
-	desc = "Strange symbols pulse upon the ground..."
-	anchored = TRUE
-	icon = 'icons/effects/160x160.dmi'
-	icon_state = "imbuement"
-	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	layer = SIGIL_LAYER
-
-/obj/effect/roguerunelargeWall/
-	name = "The seal of Graggar"
-	desc = "Despite all their attempts, the orcs never understood how to open the gate..."
-	anchored = TRUE
-	icon = 'icons/effects/160x160.dmi'
-	icon_state = "walltest"
-	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	layer = SIGIL_LAYER
-
-// helper proc
-/proc/isarcyne(mob/living/carbon/human/A)
-	return istype(A) && A.mind && (A.get_skill_level(/datum/skill/magic/arcane) > SKILL_LEVEL_NONE)

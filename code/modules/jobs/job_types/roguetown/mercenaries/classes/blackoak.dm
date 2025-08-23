@@ -46,8 +46,12 @@
 			beltl = /obj/item/rogueweapon/huntingknife/idagger/steel/special
 			beltr = /obj/item/flashlight/flare/torch
 			r_hand = /obj/item/rogueweapon/halberd/glaive
-			backr = /obj/item/gwstrap
-			backpack_contents = list(/obj/item/roguekey/mercenary, /obj/item/storage/belt/rogue/pouch/coins/poor)
+			backr = /obj/item/rogueweapon/scabbard/gwstrap
+			backpack_contents = list(
+				/obj/item/roguekey/mercenary = 1,
+				/obj/item/storage/belt/rogue/pouch/coins/poor = 1,
+				/obj/item/rogueweapon/scabbard/sheath = 1
+				)
 			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 		if("Ranged (Bows)")
 			H.adjust_skillrank(/datum/skill/combat/bows, 5, TRUE)
@@ -68,10 +72,17 @@
 			head = /obj/item/clothing/head/roguetown/helmet/sallet/elven
 			armor = /obj/item/clothing/suit/roguetown/armor/leather/trophyfur
 			neck = /obj/item/clothing/neck/roguetown/chaincoif/full
-			beltr = /obj/item/rogueweapon/huntingknife/idagger/silver/elvish
+			beltr = /obj/item/rogueweapon/scabbard/sheath
+			r_hand = /obj/item/rogueweapon/huntingknife/idagger/silver/elvish
 			beltl = /obj/item/quiver/arrows
 			backr = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
-			backpack_contents = list(/obj/item/roguekey/mercenary, /obj/item/storage/belt/rogue/pouch/coins/poor, /obj/item/rogueweapon/huntingknife/idagger/navaja, /obj/item/flashlight/flare/torch)
+			backpack_contents = list(
+				/obj/item/roguekey/mercenary = 1,
+				/obj/item/storage/belt/rogue/pouch/coins/poor = 1,
+				/obj/item/rogueweapon/huntingknife/idagger/navaja = 1,
+				/obj/item/rogueweapon/scabbard/sheath = 1,
+				/obj/item/flashlight/flare/torch = 1,
+				)
 			ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
 
 	//Shared minor skillblock from Wardens
@@ -81,3 +92,4 @@
 	H.adjust_skillrank(/datum/skill/labor/farming, 2, TRUE)
 	ADD_TRAIT(H, TRAIT_AZURENATIVE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_OUTDOORSMAN, TRAIT_GENERIC)
+	H.merctype = 2

@@ -11,6 +11,24 @@
 	sellprice = 6
 	craftdiff = 0
 
+/datum/crafting_recipe/roguetown/leather/container/magepouch
+	name = "summoner's pouch"
+	reqs = list(
+		/obj/item/natural/hide/cured = 2,
+		/obj/item/natural/fibers = 1,
+	)
+	result = /obj/item/storage/magebag
+	craftdiff = 1
+
+/datum/crafting_recipe/roguetown/leather/container/meatbag
+	name = "game satchel"
+	reqs = list(
+		/obj/item/natural/hide/cured = 2,
+		/obj/item/natural/cloth = 1,
+	)
+	result = /obj/item/storage/meatbag
+	craftdiff = 1
+
 /datum/crafting_recipe/roguetown/leather/container/satchel
 	name = "satchel (1 fibers, 2 leather)"
 	result = /obj/item/storage/backpack/rogue/satchel
@@ -19,7 +37,7 @@
 
 /datum/crafting_recipe/roguetown/leather/container/satchelshort
 	name = "short satchel (1 fibers, 2 leather)"
-	result = /obj/item/storage/backpack/rogue/satchel
+	result = /obj/item/storage/backpack/rogue/satchel/short
 	reqs = list(/obj/item/natural/hide/cured = 2,
 				/obj/item/natural/fibers = 1)
 	sellprice = 15
@@ -50,7 +68,7 @@
 
 /datum/crafting_recipe/roguetown/leather/container/gwstrap
 	name = "greatweapon strap (2 leather, 1 rope)"
-	result = /obj/item/gwstrap
+	result = /obj/item/rogueweapon/scabbard/gwstrap
 	reqs = list(/obj/item/natural/hide/cured = 2,
 				/obj/item/rope = 1)
 
@@ -77,3 +95,30 @@
 	result = /obj/item/storage/belt/rogue/leather/knifebelt
 	reqs = list(/obj/item/natural/hide/cured = 2,
 				/obj/item/natural/fibers = 2)
+
+/datum/crafting_recipe/roguetown/leather/container/belt/surgicalbag
+	name = "surgeon's bag (2 leather, 1 fiber)"
+	result = list(/obj/item/storage/belt/rogue/surgery_bag/empty)
+	reqs = list(/obj/item/natural/hide/cured = 2,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/leather/container/scabbard/sword
+	name = "sword scabbard (2 leather, 3 fiber, 1 small log, 1 rope)"
+	result = list(/obj/item/rogueweapon/scabbard/sword)
+	reqs = list(
+		/obj/item/natural/hide/cured = 2,
+		/obj/item/natural/fibers = 3,
+		/obj/item/grown/log/tree/small = 1,
+		/obj/item/rope = 1
+	)
+	craftdiff = 2
+
+/datum/crafting_recipe/roguetown/leather/container/scabbard/dagger
+	name = "dagger sheath (2 leather, 2 stick)"
+	result = list(/obj/item/rogueweapon/scabbard/sheath)
+	reqs = list(
+		/obj/item/natural/hide/cured = 2,
+		/obj/item/grown/log/tree/stick = 2,
+	)
+	craftdiff = 2

@@ -47,7 +47,8 @@
 				if("Zweihander")
 					r_hand = /obj/item/rogueweapon/greatsword/grenz
 				if("Kriegmesser & Buckler") // Buckler cuz they have no shield skill.
-					r_hand = /obj/item/rogueweapon/sword/long/kriegmesser
+					r_hand = /obj/item/rogueweapon/scabbard/sword
+					beltr = /obj/item/rogueweapon/sword/long/kriegmesser
 					l_hand = /obj/item/rogueweapon/shield/buckler
 		if("Halberdier")
 			H.set_blindness(0)
@@ -83,7 +84,6 @@
 	wrists = /obj/item/clothing/wrists/roguetown/bracers
 	belt = /obj/item/storage/belt/rogue/leather
 	beltl = /obj/item/flashlight/flare/torch
-	beltr = /obj/item/storage/belt/rogue/pouch/coins/poor
 	neck = /obj/item/clothing/neck/roguetown/gorget
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/grenzelhoft
 	head = /obj/item/clothing/head/roguetown/grenzelhofthat
@@ -92,9 +92,13 @@
 	shoes = /obj/item/clothing/shoes/roguetown/grenzelhoft
 	gloves = /obj/item/clothing/gloves/roguetown/angle/grenzelgloves
 	backr = /obj/item/storage/backpack/rogue/satchel/black
-	backl = /obj/item/gwstrap
+	backl = /obj/item/rogueweapon/scabbard/gwstrap
 
-	backpack_contents = list(/obj/item/roguekey/mercenary)
+	backpack_contents = list(
+		/obj/item/roguekey/mercenary = 1,
+		/obj/item/storage/belt/rogue/pouch/coins/poor = 1
+		)
 
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 	H.grant_language(/datum/language/grenzelhoftian)
+	H.merctype = 7

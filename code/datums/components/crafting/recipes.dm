@@ -24,6 +24,7 @@
 	var/structurecraft = null
 	var/buildsame = FALSE //allows palisades to be built on top of each other just not the same dir
 	var/wallcraft = FALSE
+	var/diagonal = FALSE //allows diagonal structures to have their direction chosen.
 	var/craftdiff = 1
 	var/sellprice = 0
 	/// Whether this recipe will transmit a message in a 7x7 column around the source.
@@ -84,7 +85,7 @@
 		var/count = reqs[path]
 		if(ispath(path, /datum/reagent))
 			var/datum/reagent/R = path
-			html += "[CEILING(count / 3, 1)] oz of [initial(R.name)]<br>" // Cuz we're weird and don't use it under chem catalyst and we don't want icon crash 
+			html += "- [CEILING(count / 3, 1)] oz of [initial(R.name)]<br>" // Cuz we're weird and don't use it under chem catalyst and we don't want icon crash 
 		else if(ispath(path, /obj)) // Prevent a runtime from happening w/ datum atm until it is
 			var/atom/atom = path
 			if(subtype_reqs)

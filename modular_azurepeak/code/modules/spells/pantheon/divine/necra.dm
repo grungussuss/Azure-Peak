@@ -62,6 +62,7 @@
 
 /obj/effect/proc_holder/spell/targeted/abrogation
 	name = "Abrogation"
+	desc = "Debuffs targeted undead as long as they remain near you, slowly getting set on fire if they stay."
 	range = 8
 	overlay_state = "necra"
 	releasedrain = 30
@@ -74,7 +75,7 @@
 	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
 	sound = 'sound/magic/churn.ogg'
 	associated_skill = /datum/skill/magic/holy
-	invocation = "The Undermaiden rebukes!"
+	invocations = list("The Undermaiden rebukes!")
 	invocation_type = "shout" //can be none, whisper, emote and shout
 	miracle = TRUE
 	devotion_cost = 20
@@ -184,6 +185,7 @@
 
 /obj/effect/proc_holder/spell/invoked/necra_vow
 	name = "Vow to Necra"
+	desc = "Make a vow to Necra. Your chances of revival or recovery of limb will be greatly reduced. You will harm undeath and heal yourself at a slow rate."
 	range = 1
 	overlay_state = "necra"
 	releasedrain = 30
@@ -194,7 +196,7 @@
 	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
 	sound = 'sound/magic/churn.ogg'
 	associated_skill = /datum/skill/magic/holy
-	invocation = "The Undermaiden Protects."
+	invocations = list("The Undermaiden Protects.")
 	invocation_type = "shout"
 	miracle = TRUE
 	devotion_cost = 100
@@ -257,7 +259,7 @@
 	recharge_time = 10 SECONDS
 	warnie = "spellwarning"
 	invocation_type = "whisper"
-	invocation = "Undermaiden guide my gaze..."
+	invocations = list("Undermaiden guide my gaze...")
 	associated_skill = /datum/skill/magic/holy
 	overlay_state = "necraeye"
 	miracle = TRUE
@@ -335,3 +337,49 @@
 			break
 		else
 			continue
+
+/obj/effect/proc_holder/spell/invoked/raise_spirits_vengeance
+	name = "Avenging Spirits"
+	desc = "Summon rancorous spirits to tear at an opponent!"
+	range = 7
+	sound = list('sound/magic/magnet.ogg')
+	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
+	releasedrain = 40
+	chargetime = 30
+	warnie = "spellwarning"
+	no_early_release = TRUE
+	charging_slowdown = 1
+	chargedloop = /datum/looping_sound/invokeholy
+	gesture_required = TRUE 
+	associated_skill = /datum/skill/magic/holy
+	recharge_time = 90 SECONDS
+	hide_charge_effect = TRUE
+	miracle = TRUE
+	devotion_cost = 50
+	overlay_icon = 'icons/mob/actions/necramiracles.dmi'
+	overlay_state = "vengeful_spirit"
+	action_icon_state = "vengeful_spirit"
+	action_icon = 'icons/mob/actions/necramiracles.dmi'
+	invocations = list("Awaken, rancor!!")
+	invocation_type = "shout"
+
+
+
+/obj/effect/proc_holder/spell/invoked/raise_spirits_vengeance/cast(list/targets, mob/living/user)
+	. = ..()
+	if(isliving(targets[1]))
+		var/mob/living/target = targets[1]
+		if(user.dir == SOUTH || user.dir == NORTH)
+			new /mob/living/simple_animal/hostile/rogue/spirit_vengeance(get_turf(user),user)
+			new /mob/living/simple_animal/hostile/rogue/spirit_vengeance(get_step(user, EAST),user)
+			new /mob/living/simple_animal/hostile/rogue/spirit_vengeance(get_step(user, WEST),user)
+		else
+			new /mob/living/simple_animal/hostile/rogue/spirit_vengeance(get_turf(user),user)
+			new /mob/living/simple_animal/hostile/rogue/spirit_vengeance(get_step(user, NORTH),user)
+			new /mob/living/simple_animal/hostile/rogue/spirit_vengeance(get_step(user, SOUTH),user)
+		for(var/mob/living/simple_animal/hostile/rogue/spirit_vengeance/swarm in view(2, user))
+			swarm.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target) 
+		return TRUE
+	revert_cast()
+	return FALSE
+

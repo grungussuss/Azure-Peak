@@ -49,7 +49,6 @@
 		backl = /obj/item/rogue/instrument/harp
 		beltl = /obj/item/flashlight/flare/torch/lantern
 		shirt = /obj/item/clothing/suit/roguetown/shirt/shortshirt
-		pants = /obj/item/clothing/under/roguetown/tights/stockings/silk/random
 		backr = /obj/item/storage/backpack/rogue/satchel
 		id = /obj/item/clothing/ring/signet
 		shoes = /obj/item/clothing/shoes/roguetown/shortboots
@@ -131,7 +130,10 @@
 		armor = /obj/item/clothing/suit/roguetown/armor/armordress/winterdress
 	if(should_wear_masc_clothes(H))
 		armor = /obj/item/clothing/suit/roguetown/armor/longcoat
-	backpack_contents = list(/obj/item/reagent_containers/glass/bottle/rogue/poison = 1, /obj/item/lockpick = 1)
+	backpack_contents = list(
+		/obj/item/reagent_containers/glass/bottle/rogue/poison = 1,
+		/obj/item/lockpick = 1,
+		)
 	if(H.mind)
 		var/datum/antagonist/new_antag = new /datum/antagonist/suitor()
 		H.mind.add_antag_datum(new_antag)

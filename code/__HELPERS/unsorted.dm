@@ -24,17 +24,19 @@
 /proc/Get_Angle(atom/movable/start,atom/movable/end)//For beams.
 	if(!start || !end)
 		return 0
-	var/dy
-	var/dx
-	dy=(32*end.y+end.pixel_y)-(32*start.y+start.pixel_y)
-	dx=(32*end.x+end.pixel_x)-(32*start.x+start.pixel_x)
-	if(!dy)
-		return (dx>=0)?90:270
-	.=arctan(dx/dy)
-	if(dy<0)
-		.+=180
-	else if(dx<0)
-		.+=360
+	var/dy =(world.icon_size * end.y + end.pixel_y) - (world.icon_size * start.y + start.pixel_y)
+	var/dx =(world.icon_size * end.x + end.pixel_x) - (world.icon_size * start.x + start.pixel_x)
+	return delta_to_angle(dx, dy)
+
+/// Calculate the angle produced by a pair of x and y deltas
+/proc/delta_to_angle(x, y)
+	if(!y)
+		return (x >= 0) ? 90 : 270
+	. = arctan(x/y)
+	if(y < 0)
+		. += 180
+	else if(x < 0)
+		. += 360
 
 /proc/Get_Pixel_Angle(y, x)//for getting the angle when animating something's pixel_x and pixel_y
 	if(!y)
@@ -1619,3 +1621,16 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars,list(
 			for(var/atom/contained_atom in M.component_parts)
 				contained_atom.flags_1 |= HOLOGRAM_1
 	return O
+
+#define VALID_HUNTING_AREAS list(\
+	/area/rogue/outdoors/beach/forest, \
+	/area/rogue/outdoors/woods, \
+	/area/rogue/outdoors/bog, \
+	/area/rogue/outdoors/mountains \
+)
+
+/proc/is_valid_hunting_area(area/A)
+	for(var/i in VALID_HUNTING_AREAS)
+		if(istype(A, i))
+			return TRUE
+	return FALSE

@@ -16,6 +16,7 @@
 	max_pq = null
 	bypass_lastclass = TRUE
 	round_contrib_points = 3
+	cmode_music = 'sound/music/cmode/nobility/combat_spymaster.ogg'
 
 /datum/outfit/job/roguetown/niteman/pre_equip(mob/living/carbon/human/H)
 	..()
@@ -29,7 +30,11 @@
 	beltl = /obj/item/rogueweapon/whip
 
 	backl = /obj/item/storage/backpack/rogue/satchel
-	backpack_contents = list(/obj/item/reagent_containers/food/snacks/grown/rogue/swampweeddry = 2, /obj/item/reagent_containers/powder/moondust = 2, /obj/item/reagent_containers/powder/spice = 1)
+	backpack_contents = list(
+		/obj/item/reagent_containers/food/snacks/grown/rogue/swampweeddry = 2,
+		/obj/item/reagent_containers/powder/moondust = 2,
+		/obj/item/reagent_containers/powder/spice = 1,
+		)
 	H.grant_language(/datum/language/thievescant)
 	ADD_TRAIT(H, TRAIT_GOODLOVER, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_SEEPRICES_SHITTY, TRAIT_GENERIC)

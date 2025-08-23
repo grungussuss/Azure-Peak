@@ -17,7 +17,14 @@
 	pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/chargah
 	backr = /obj/item/storage/backpack/rogue/satchel
-	backpack_contents = list(/obj/item/roguekey/mercenary, /obj/item/flashlight/flare/torch, /obj/item/rogueweapon/huntingknife/idagger/steel, /obj/item/storage/belt/rogue/pouch/coins/poor, /obj/item/rogueweapon/whip/nagaika)
+	backpack_contents = list(
+		/obj/item/roguekey/mercenary,
+		/obj/item/flashlight/flare/torch,
+		/obj/item/rogueweapon/huntingknife/idagger/steel,
+		/obj/item/storage/belt/rogue/pouch/coins/poor,
+		/obj/item/rogueweapon/whip/nagaika,
+		/obj/item/rogueweapon/scabbard/sheath
+		)
 
 	//Universal skills
 	H.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
@@ -45,7 +52,8 @@
 			cloak = /obj/item/clothing/cloak/raincloak/furcloak
 			wrists = /obj/item/clothing/wrists/roguetown/bracers
 			beltr = /obj/item/rogueweapon/shield/wood
-			beltl= /obj/item/rogueweapon/sword/sabre
+			beltl= /obj/item/rogueweapon/scabbard/sword
+			l_hand = /obj/item/rogueweapon/sword/sabre
 			neck = /obj/item/clothing/neck/roguetown/chaincoif
 			H.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
 			H.adjust_skillrank(/datum/skill/combat/shields, 3, TRUE)
@@ -114,3 +122,6 @@
 			H.change_stat("speed", 2)
 			ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
 			H.dna.species.soundpack_m = new /datum/voicepack/male/warrior()		//Semi-crazed warrior vibe.
+		
+	H.grant_language(/datum/language/aavnic)
+	H.merctype = 11

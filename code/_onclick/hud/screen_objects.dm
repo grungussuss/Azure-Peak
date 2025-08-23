@@ -621,6 +621,8 @@
 		L.playsound_local(L, 'sound/misc/click.ogg', 100)
 		if(modifiers["right"])
 			L.submit()
+		else if(modifiers["middle"])
+			L.toggle_compliance()
 		else
 			L.toggle_cmode()
 			update_icon()
@@ -801,7 +803,7 @@
 			iris.icon_state = "oeye_fixed"
 		else
 			iris.icon_state = "oeye"
-	iris.color = "#" + human.eye_color
+	iris.color = human.get_eye_color()
 	. += iris
 
 /atom/movable/screen/eye_intent/proc/toggle(mob/user)
@@ -898,6 +900,8 @@
 	if(modifiers["right"])
 		if(master)
 			var/obj/item/flipper = usr.get_active_held_item()
+			if(!flipper)
+				return
 			if((!usr.Adjacent(flipper) && !usr.DirectAccess(flipper)) || !isliving(usr) || usr.incapacitated())
 				return
 			var/old_width = flipper.grid_width
@@ -943,7 +947,14 @@
 	var/overlay_icon = 'icons/mob/roguehud64.dmi'
 	var/static/list/hover_overlays_cache = list()
 	var/hovering
+	var/obj/effect/overlay/flash_layer
 	var/arrowheight = 0
+
+/atom/movable/screen/zone_sel/New()
+	..()
+	flash_layer = new
+	flash_layer.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	vis_contents += flash_layer
 
 /atom/movable/screen/zone_sel/Click(location, control,params)
 	if(isobserver(usr))
@@ -1302,6 +1313,30 @@
 
 	. += mutable_appearance(overlay_icon, "[hud.mymob.gender == "male" ? "m" : "f"]_[hud.mymob.zone_selected]")
 //	. += mutable_appearance(overlay_icon, "height_arrow[hud.mymob.aimheight]")
+
+/atom/movable/screen/zone_sel/proc/flash_limb(zone, limb_color="#FF0000") //Flashes when an attack hits a limb
+	if(!zone || !hud?.mymob)
+		return
+
+	var/gender_prefix = (hud.mymob.gender == FEMALE) ? "f" : "m"
+
+	var/obj/effect/overlay/highlight = new
+	highlight.icon = 'icons/mob/roguehud64.dmi'
+	highlight.icon_state = "[gender_prefix]-[zone]"
+	highlight.color = limb_color
+	highlight.alpha = 180
+	highlight.layer = ABOVE_HUD_LAYER
+	highlight.plane = ABOVE_HUD_PLANE-0.1
+	highlight.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+	flash_layer.vis_contents += highlight
+
+	animate(highlight, alpha = 0, time = 20, easing = EASE_IN)
+
+	spawn(20)
+		if(highlight in flash_layer.vis_contents)
+			flash_layer.vis_contents -= highlight
+		qdel(highlight)
 
 /atom/movable/screen/zone_sel/robot
 	icon = 'icons/mob/screen_cyborg.dmi'
@@ -1743,24 +1778,13 @@
 				hud_used.rmb_intent.collapse_intents()
 
 /mob/living/proc/cycle_rmb_intent()
-    if(!possible_rmb_intents?.len)
-        return
+	if(!possible_rmb_intents?.len)
+		return
 
-    // Find the index of the current intent
-    var/index = possible_rmb_intents.Find(rmb_intent)
+	// Find the index of the current intent
+	var/index = possible_rmb_intents.Find(rmb_intent?.type)
 
-    if(index == -1)
-        rmb_intent = possible_rmb_intents[1]
-    else
-        // Calculate the next index, wrapping around if at the end
-        index = (index % possible_rmb_intents.len) + 1
-        rmb_intent = possible_rmb_intents[index]
-
-    if(hud_used?.rmb_intent)
-    {
-        hud_used.rmb_intent.update_icon()
-        hud_used.rmb_intent.collapse_intents()
-    }
+	index == -1 ? swap_rmb_intent(possible_rmb_intents[1]) : swap_rmb_intent(possible_rmb_intents[(index % possible_rmb_intents.len) + 1])
 
 /atom/movable/screen/time
 	name = "Sir Sun"

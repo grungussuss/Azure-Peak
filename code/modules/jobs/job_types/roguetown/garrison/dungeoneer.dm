@@ -24,6 +24,8 @@
 
 	cmode_music = 'sound/music/combat_dungeoneer.ogg'
 
+	stat_ceilings = list(STAT_STRENGTH = 16, STAT_CONSTITUTION = 16, STAT_ENDURANCE = 16)
+
 /datum/job/roguetown/dungeoneer/New()
 	. = ..()
 	peopleknowme = list()
@@ -50,7 +52,10 @@
 	beltl = /obj/item/storage/keyring/dungeoneer
 	backr = /obj/item/storage/backpack/rogue/satchel/black
 	id = /obj/item/scomstone/bad/garrison
-	backpack_contents = list(/obj/item/reagent_containers/glass/bottle/rogue/healthpot = 2, /obj/item/flashlight/flare/torch/lantern = 1)//No armoury access
+	backpack_contents = list(
+		/obj/item/reagent_containers/glass/bottle/rogue/healthpot = 2,
+		/obj/item/flashlight/flare/torch/lantern = 1,
+		) //No armoury access
 	H.adjust_skillrank(/datum/skill/combat/whipsflails, 4, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/wrestling, 5, TRUE) //hilarious
 	H.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)

@@ -3,6 +3,11 @@
 	stressadd = -2
 	desc = span_green("The Gods smile upon me.")
 
+/datum/stressevent/seeblessed
+	timer = 30 MINUTES
+	stressadd = -2
+	desc = span_green("Regular visits to Church center my spirit.")
+
 /datum/stressevent/viewsinpunish
 	timer = 5 MINUTES
 	stressadd = -2
@@ -231,3 +236,8 @@
 	stressadd = -2
 	desc = span_info("A Devout Eoran shone their brightness upon me.")
 	timer = 10 MINUTES
+
+/datum/stressevent/sermon
+	stressadd = -5
+	desc = span_green("I feel inspired by the sermon.")
+	timer = 20 MINUTES

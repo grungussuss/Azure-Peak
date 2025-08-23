@@ -51,11 +51,7 @@ GLOBAL_LIST_EMPTY(lord_titles)
 			GLOB.lordsurname = jointext(chopped_name, " ")
 		else
 			GLOB.lordsurname = "of [L.real_name]"
-		SSticker.rulermob = L
-		if(should_wear_femme_clothes(L))
-			SSticker.rulertype = "Grand Duchess"
-		else
-			SSticker.rulertype = "Grand Duke"
+		SSticker.set_ruler_mob(L)
 		to_chat(world, "<b><span class='notice'><span class='big'>[L.real_name] is [SSticker.rulertype] of Azure Peak.</span></span></b>")
 		if(istype(SSticker.regentmob, /mob/living/carbon/human))
 			var/mob/living/carbon/human/regentbuddy = SSticker.regentmob
@@ -114,8 +110,8 @@ GLOBAL_LIST_EMPTY(lord_titles)
 
 /datum/outfit/job/roguetown/lord/warrior/pre_equip(mob/living/carbon/human/H)
 	..()
-	l_hand = /obj/item/rogueweapon/lordscepter // If you put something in l hand with a mother outfit
-	// It will dupe
+	l_hand = /obj/item/rogueweapon/lordscepter
+
 	H.adjust_skillrank(/datum/skill/combat/polearms, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/maces, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/crossbows, 3, TRUE)
@@ -156,7 +152,7 @@ GLOBAL_LIST_EMPTY(lord_titles)
 /datum/outfit/job/roguetown/lord/merchant/pre_equip(mob/living/carbon/human/H)
 	..()
 	l_hand = /obj/item/rogueweapon/lordscepter
-	
+
 	H.adjust_skillrank(/datum/skill/combat/polearms, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/maces, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/combat/crossbows, 4, TRUE) // Weapons suitable for defending yourself as a merchant.
@@ -197,6 +193,7 @@ GLOBAL_LIST_EMPTY(lord_titles)
 /datum/outfit/job/roguetown/lord/inbred/pre_equip(mob/living/carbon/human/H)
 	..()
 	l_hand = /obj/item/rogueweapon/lordscepter
+
 	ADD_TRAIT(H, TRAIT_CRITICAL_WEAKNESS, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_NORUN, TRAIT_GENERIC)
 	H.adjust_skillrank(/datum/skill/combat/bows, 1, TRUE)
@@ -334,6 +331,8 @@ GLOBAL_LIST_EMPTY(lord_titles)
 		return FALSE
 	//need to see their damn face
 	if(!recruit.get_face_name(null))
+		return FALSE
+	if(HAS_TRAIT(recruit, TRAIT_DEFILED_NOBLE)) // Their lux was tainted by evil matthios rite. They are utterly fucked.
 		return FALSE
 	return TRUE
 

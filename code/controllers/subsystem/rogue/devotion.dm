@@ -7,14 +7,15 @@
 #define CLERIC_T4 4
 
 #define CLERIC_REQ_0 0
-#define CLERIC_REQ_1 100
-#define CLERIC_REQ_2 250
-#define CLERIC_REQ_3 500
-#define CLERIC_REQ_4 750
+#define CLERIC_REQ_1 250
+#define CLERIC_REQ_2 400
+#define CLERIC_REQ_3 750
+#define CLERIC_REQ_4 1000
 
 #define CLERIC_REGEN_DEVOTEE 0.3
 #define CLERIC_REGEN_MINOR 0.5
-#define CLERIC_REGEN_MAJOR 1
+#define CLERIC_REGEN_MAJOR 0.8
+#define CLERIC_REGEN_ABSOLVER 5
 
 // Cleric Holder Datums
 
@@ -26,7 +27,7 @@
 	/// Current devotion we are holding
 	var/devotion = 0
 	/// Maximum devotion we can hold at once
-	var/max_devotion = CLERIC_REQ_3 * 2
+	var/max_devotion = CLERIC_REQ_1
 	/// Current progression (experience)
 	var/progression = 0
 	/// Maximum progression (experience) we can achieve
@@ -104,21 +105,21 @@
 	return TRUE
 
 /datum/devotion/proc/try_add_spells(silent = FALSE)
-	if(length(patron.miracles))
+	if(!holder || !holder.mind)
+		return
+
+	if(patron && length(patron.miracles))
 		for(var/spell_type in patron.miracles)
-			if(patron.miracles[spell_type] <= level)
+			var/required_tier = patron.miracles[spell_type]			
+			if(required_tier <= level)
 				if(holder.mind.has_spell(spell_type))
 					continue
-				else
-					var/newspell = new spell_type
-					if(!silent)
-						to_chat(holder, span_boldnotice("I have unlocked a new spell: [newspell]"))
-					holder.mind.AddSpell(newspell)
-					LAZYADD(granted_spells, newspell)
-	if(length(patron.traits_tier))
-		for(var/trait in patron.traits_tier)
-			if(patron.traits_tier[trait] <= level)
-				ADD_TRAIT(holder, trait, TRAIT_MIRACLE)
+
+				var/obj/effect/proc_holder/spell/newspell = new spell_type
+				if(!silent)
+					to_chat(holder, span_boldnotice("I have unlocked a new spell: [newspell]"))
+				holder.mind.AddSpell(newspell)
+				LAZYADD(granted_spells, newspell)
 
 
 //The main proc that distributes all the needed devotion tweaks to the given class.
@@ -138,6 +139,7 @@
 		passive_progression_gain = passive_gain
 		START_PROCESSING(SSobj, src)
 	if(start_maxed)		//Mainly for Acolytes & Priests
+		max_devotion = CLERIC_REQ_4
 		devotion = max_devotion
 		update_devotion(max_devotion, CLERIC_REQ_4, silent = TRUE)
 	else
