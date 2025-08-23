@@ -86,7 +86,6 @@
 	default_colors = list("C52828", "C52828")
 
 /datum/sprite_accessory/testicles
-	icon = 'icons/mob/sprite_accessory/genitals/gonads.dmi'
 	color_key_name = "Sack"
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
