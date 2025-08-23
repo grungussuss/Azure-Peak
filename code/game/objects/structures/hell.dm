@@ -53,6 +53,7 @@ GLOBAL_LIST_EMPTY(hellspawns)
 /mob/dead/observer
 	var/isinhell
 	var/last_helld = 0
+	icon_state = "ghost"
 
 /mob/dead/observer/proc/go2hell()
 	var/obj/effect/landmark/L = pick(GLOB.hellspawns)

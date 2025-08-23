@@ -70,6 +70,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 /mob/dead/observer/admin
 	hud_type = /datum/hud/adminghost
+	icon_state = "ghost"
 
 /mob/dead/observer/rogue/nodraw
 	draw_icon = FALSE
@@ -114,6 +115,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 			client?.verbs += GLOB.ghost_verbs
 			to_chat(src, span_danger("Click the <b>SKULL</b> on the left of your HUD to respawn."))
 
+	/*
 	if(icon_state in GLOB.ghost_forms_with_directions_list)
 		ghostimage_default = image(src.icon,src,src.icon_state + "")
 	else
@@ -126,7 +128,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	GLOB.ghost_images_simple |= ghostimage_simple
 
 	updateallghostimages()
-
+	*/
 	testing("BEGIN LOC [loc]")
 
 	var/turf/T
